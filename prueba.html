@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SBAVECA - Sistema Gastronómico Integral</title>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+            scroll-behavior:smooth;
+        }
+
+        body{
+            font-family:'Poppins', sans-serif;
+            background:#f8f8f8;
+            color:#333;
+        }
+
+        a{
+            text-decoration:none;
+            color:inherit;
+        }
+
+        img{
+            width:100%;
+            display:block;
+        }
+
+        /* TOPBAR */
+
+        .topbar{
+            background:#ffffff;
+            border-bottom:1px solid #e5e5e5;
+            padding:10px 40px;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            font-size:14px;
+            flex-wrap:wrap;
+        }
+
+        .topbar-left{
+            display:flex;
+            gap:25px;
+            color:#777;
+            flex-wrap:wrap;
+        }
+
+        .topbar-right{
+            display:flex;
+            gap:20px;
+        }
+
+        .topbar-right a:hover{
+            color:#d46a92;
+        }
+
+        /* NAVBAR */
+
+        .navbar{
+            background:white;
+            padding:20px 50px;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            position:sticky;
+            top:0;
+            z-index:999;
+            box-shadow:0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .logo{
+            font-size:42px;
+            font-weight:800;
+            color:#d46a92;
+        }
+
+        .logo span{
+            color:#333;
+            font-size:15px;
+            display:block;
+            margin-top:-8px;
+            letter-spacing:3px;
+        }
+
+        .menu{
+            display:flex;
+            gap:28px;
+            flex-wrap:wrap;
+        }
+
+        .menu a{
+            font-weight:500;
+            transition:0.3s;
+        }
+
+        .menu a:hover{
+            color:#d46a92;
+        }
+
+        .nav-icons{
+            display:flex;
+            align-items:center;
+            gap:20px;
+        }
+
+        .search-box{
+            background:#f3f3f3;
+            padding:10px 15px;
+            border-radius:30px;
+            display:flex;
+            align-items:center;
+            gap:10px;
+        }
+
+        .search-box input{
+            border:none;
+            outline:none;
+            background:none;
+            width:120px;
+        }
+
+        /* HERO */
+
+        .hero{
+            height:90vh;
+            background:url('https://images.unsplash.com/photo-1578985545062-69928b1d9587?q=80&w=1974&auto=format&fit=crop') center/cover;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            position:relative;
+        }
+
+        .hero::before{
+            content:'';
+            position:absolute;
+            width:100%;
+            height:100%;
+            background:rgba(0,0,0,0.55);
+        }
+
+        .hero-content{
+            position:relative;
+            text-align:center;
+            color:white;
+            max-width:900px;
+            padding:20px;
+        }
+
+        .hero-content h1{
+            font-size:75px;
+            margin-bottom:20px;
+        }
+
+        .hero-content p{
+            font-size:20px;
+            line-height:1.8;
+            margin-bottom:35px;
+        }
+
+        .btn{
+            display:inline-block;
+            padding:15px 35px;
+            background:#d46a92;
+            color:white;
+            border-radius:40px;
+            font-weight:600;
+            transition:0.3s;
+        }
+
+        .btn:hover{
+            background:#bb4e78;
+            transform:translateY(-4px);
+        }
+
+        /* GENERAL SECTIONS */
+
+        .section{
+            padding:85px 8%;
+        }
+
+        .section-title{
+            text-align:center;
+            font-size:45px;
+            margin-bottom:55px;
+        }
+
+        /* CATEGORIES */
+
+        .categories{
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+            gap:30px;
+        }
+
+        .category-card{
+            background:white;
+            border-radius:20px;
+            overflow:hidden;
+            box-shadow:0 5px 20px rgba(0,0,0,0.08);
+            transition:0.3s;
+        }
+
+        .category-card:hover{
+            transform:translateY(-8px);
+        }
+
+        .category-card img{
+            height:240px;
+            object-fit:cover;
+        }
+
+        .category-info{
+            padding:20px;
+            text-align:center;
+        }
+
+        /* PRODUCTS */
+
+        .products{
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+            gap:30px;
+        }
+
+        .product-card{
+            background:white;
+            border-radius:20px;
+            overflow:hidden;
+            box-shadow:0 5px 20px rgba(0,0,0,0.08);
+            transition:0.3s;
+        }
+
+        .product-card:hover{
+            transform:translateY(-10px);
+        }
+
+        .product-card img{
+            height:320px;
+            object-fit:cover;
+        }
+
+        .product-info{
+            padding:25px;
+            text-align:center;
+        }
+
+        .price{
+            color:#d46a92;
+            font-size:28px;
+            font-weight:700;
+            margin:12px 0;
+        }
+
+        .product-btn{
+            display:inline-block;
+            margin-top:15px;
+            padding:10px 25px;
+            background:#333;
+            color:white;
+            border-radius:30px;
+        }
+
+        .product-btn:hover{
+            background:#d46a92;
+        }
+
+        /* FEATURES */
+
+        .features{
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+            gap:30px;
+        }
+
+        .feature{
+            background:white;
+            padding:35px;
+            border-radius:20px;
+            text-align:center;
+            box-shadow:0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        .feature i{
+            font-size:50px;
+            color:#d46a92;
+            margin-bottom:20px;
+        }
+
+        /* MODULES */
+
+        .modules{
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+            gap:25px;
+        }
+
+        .module-card{
+            background:white;
+            padding:30px;
+            border-left:6px solid #d46a92;
+            border-radius:15px;
+            box-shadow:0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        .module-card h3{
+            margin-bottom:15px;
+            color:#d46a92;
+        }
+
+        /* TEAM */
+
+        .team{
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+            gap:25px;
+        }
+
+        .team-member{
+            background:white;
+            padding:30px;
+            border-radius:20px;
+            text-align:center;
+            box-shadow:0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        .team-member i{
+            font-size:60px;
+            color:#d46a92;
+            margin-bottom:15px;
+        }
+
+        /* NEWSLETTER */
+
+        .newsletter{
+            background:white;
+            padding:60px;
+            border-radius:25px;
+            text-align:center;
+            box-shadow:0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        .newsletter form{
+            display:flex;
+            justify-content:center;
+            gap:15px;
+            flex-wrap:wrap;
+            margin-top:25px;
+        }
+
+        .newsletter input{
+            padding:15px;
+            width:280px;
+            border-radius:30px;
+            border:1px solid #ddd;
+            outline:none;
+        }
+
+        .newsletter button{
+            padding:15px 30px;
+            border:none;
+            background:#d46a92;
+            color:white;
+            border-radius:30px;
+            font-weight:600;
+            cursor:pointer;
+        }
+
+        /* FOOTER */
+
+        footer{
+            background:#1d1d1d;
+            color:white;
+            padding:70px 8%;
+            margin-top:80px;
+        }
+
+        .footer-container{
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+            gap:40px;
+        }
+
+        .footer-logo{
+            font-size:35px;
+            font-weight:700;
+            color:#d46a92;
+        }
+
+        .footer-links{
+            display:flex;
+            flex-direction:column;
+            gap:10px;
+            margin-top:15px;
+        }
+
+        .footer-links a{
+            color:#ddd;
+        }
+
+        .footer-links a:hover{
+            color:#d46a92;
+        }
+
+        .socials{
+            display:flex;
+            gap:15px;
+            margin-top:20px;
+        }
+
+        .socials i{
+            width:45px;
+            height:45px;
+            background:#333;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            border-radius:50%;
+        }
+
+        .socials i:hover{
+            background:#d46a92;
+        }
+
+        /* RESPONSIVE */
+
+        @media(max-width:950px){
+
+            .navbar{
+                flex-direction:column;
+                gap:20px;
+            }
+
+            .menu{
+                justify-content:center;
+            }
+
+            .hero-content h1{
+                font-size:50px;
+            }
+
+            .hero-content p{
+                font-size:17px;
+            }
+
+            .topbar{
+                justify-content:center;
+                gap:15px;
+            }
+
+        }
+    </style>
+</head>
+<body>
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+        <div class="topbar-left">
+            <span><i class="fa-solid fa-phone"></i> 3704-324818</span>
+            <span><i class="fa-solid fa-envelope"></i> sbaveca@gmail.com</span>
+            <span><i class="fa-solid fa-location-dot"></i> Formosa, Argentina</span>
+        </div>
+
+        <div class="topbar-right">
+            <a href="#">Crear cuenta</a>
+            <a href="#">Iniciar sesión</a>
+        </div>
+    </div>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+
+        <div class="logo">
+            SBAVECA
+            <span>SISTEMA GASTRONÓMICO</span>
+        </div>
+
+        <div class="menu">
+            <a href="#">Inicio</a>
+            <a href="#">Catálogo</a>
+            <a href="#">Pedidos</a>
+            <a href="#">Stock</a>
+            <a href="#">Dashboard</a>
+            <a href="#">Clientes</a>
+            <a href="#">Contacto</a>
+        </div>
+
+        <div class="nav-icons">
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" placeholder="Buscar">
+            </div>
+
+            <i class="fa-solid fa-cart-shopping"></i>
+        </div>
+
+    </nav>
+
+    <!-- HERO -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>SBAVECA</h1>
+
+            <p>
+                Sistema integral para pastelerías, rotiserías y emprendimientos gastronómicos artesanales.
+                Automatizá ventas, pedidos, stock, recetas, clientes, presupuestos y mucho más.
+            </p>
+
+            <a href="#" class="btn">Explorar Sistema</a>
+        </div>
+    </section>
+
+    <!-- CATEGORÍAS -->
+    <section class="section">
+
+        <h2 class="section-title">Categorías Principales</h2>
+
+        <div class="categories">
+
+            <div class="category-card">
+                <img src="https://images.unsplash.com/photo-1571115764595-644a1f56a55c?q=80&w=1964&auto=format&fit=crop">
+                <div class="category-info">
+                    <h3>Tortas Artesanales</h3>
+                    <p>Diseños personalizados premium</p>
+                </div>
+            </div>
+
+            <div class="category-card">
+                <img src="https://images.unsplash.com/photo-1551024601-bec78aea704b?q=80&w=1974&auto=format&fit=crop">
+                <div class="category-info">
+                    <h3>Budines</h3>
+                    <p>Producción artesanal diaria</p>
+                </div>
+            </div>
+
+            <div class="category-card">
+                <img src="https://images.unsplash.com/photo-1519864600265-abb23847ef2c?q=80&w=1974&auto=format&fit=crop">
+                <div class="category-info">
+                    <h3>Brownies</h3>
+                    <p>Variedad gourmet</p>
+                </div>
+            </div>
+
+            <div class="category-card">
+                <img src="https://images.unsplash.com/photo-1565958011703-44f9829ba187?q=80&w=1974&auto=format&fit=crop">
+                <div class="category-info">
+                    <h3>Tortas Premium</h3>
+                    <p>Catálogo web y configurador</p>
+                </div>
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- PRODUCTOS -->
+    <section class="section">
+
+        <h2 class="section-title">Productos Destacados</h2>
+
+        <div class="products">
+
+            <div class="product-card">
+                <img src="https://images.unsplash.com/photo-1559622214-8f5f4f1f9b0b?q=80&w=1974&auto=format&fit=crop">
+                <div class="product-info">
+                    <h3>Torta Chocolate Deluxe</h3>
+                    <div class="price">$24.999</div>
+                    <p>Chocolate premium artesanal</p>
+                    <a href="#" class="product-btn">Ver Producto</a>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <img src="https://images.unsplash.com/photo-1621303837174-89787a7d4729?q=80&w=1974&auto=format&fit=crop">
+                <div class="product-info">
+                    <h3>Cheesecake Premium</h3>
+                    <div class="price">$28.500</div>
+                    <p>Frutos rojos frescos</p>
+                    <a href="#" class="product-btn">Ver Producto</a>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <img src="https://images.unsplash.com/photo-1533134242443-d4fd215305ad?q=80&w=1974&auto=format&fit=crop">
+                <div class="product-info">
+                    <h3>Torta de Boda</h3>
+                    <div class="price">$75.999</div>
+                    <p>Personalizable online</p>
+                    <a href="#" class="product-btn">Solicitar Presupuesto</a>
+                </div>
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- FUNCIONALIDADES -->
+    <section class="section">
+
+        <h2 class="section-title">Funciones Fundamentales</h2>
+
+        <div class="features">
+
+            <div class="feature">
+                <i class="fa-solid fa-boxes-stacked"></i>
+                <h3>Control de Stock</h3>
+                <p>Alertas automáticas, proveedores y gestión de insumos.</p>
+            </div>
+
+            <div class="feature">
+                <i class="fa-solid fa-calendar-days"></i>
+                <h3>Pedidos Inteligentes</h3>
+                <p>Calendario organizado para producción y reservas.</p>
+            </div>
+
+            <div class="feature">
+                <i class="fa-solid fa-cash-register"></i>
+                <h3>Ventas Automatizadas</h3>
+                <p>Facturación, recibos, pagos y presupuestos.</p>
+            </div>
+
+            <div class="feature">
+                <i class="fa-solid fa-users"></i>
+                <h3>Clientes y Fidelización</h3>
+                <p>Puntos, descuentos y seguimiento completo.</p>
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- MÓDULOS -->
+    <section class="section">
+
+        <h2 class="section-title">Módulos Estratégicos del Sistema</h2>
+
+        <div class="modules">
+
+            <div class="module-card">
+                <h3>Autenticación y Roles</h3>
+                <p>Administrador, Empleado y Cliente Web con permisos personalizados.</p>
+            </div>
+
+            <div class="module-card">
+                <h3>Gestión de Recetas</h3>
+                <p>Recetario digital con costos automáticos e inflación adaptable.</p>
+            </div>
+
+            <div class="module-card">
+                <h3>Dashboard en Tiempo Real</h3>
+                <p>Ventas, pedidos, clientes y stock centralizados.</p>
+            </div>
+
+            <div class="module-card">
+                <h3>Configurador de Tortas</h3>
+                <p>Personalización web avanzada para pedidos premium.</p>
+            </div>
+
+            <div class="module-card">
+                <h3>Sitio Web Completo</h3>
+                <p>Catálogo, carrito, checkout y presupuestos PDF.</p>
+            </div>
+
+            <div class="module-card">
+                <h3>Sistema de Fidelización</h3>
+                <p>Puntos, clientes destacados y promociones.</p>
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- EQUIPO -->
+    <section class="section">
+
+        <h2 class="section-title">Equipo de Desarrollo</h2>
+
+        <div class="team">
+
+            <div class="team-member">
+                <i class="fa-solid fa-user-tie"></i>
+                <h3>Bordon Sbardella, Lourdes Antonella</h3>
+                <p>Desarrollo y análisis</p>
+            </div>
+
+            <div class="team-member">
+                <i class="fa-solid fa-user-tie"></i>
+                <h3>Cáceres, Facundo Matías</h3>
+                <p>Diseño, programación y arquitectura</p>
+            </div>
+
+            <div class="team-member">
+                <i class="fa-solid fa-user-tie"></i>
+                <h3>Vega, Franco Agustín</h3>
+                <p>Gestión técnica y soporte</p>
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- NEWSLETTER -->
+    <section class="section">
+
+        <div class="newsletter">
+
+            <h2>Newsletter SBAVECA</h2>
+
+            <p>
+                Recibí novedades del sistema, mejoras y soluciones gastronómicas.
+            </p>
+
+            <form>
+                <input type="text" placeholder="Nombre">
+                <input type="email" placeholder="Correo electrónico">
+                <button type="submit">Suscribirse</button>
+            </form>
+
+        </div>
+
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+
+        <div class="footer-container">
+
+            <div>
+                <div class="footer-logo">SBAVECA</div>
+
+                <p style="margin-top:20px;">
+                    Sistema gastronómico integral adaptable a pastelerías,
+                    rotiserías y emprendimientos artesanales.
+                </p>
+
+                <div class="socials">
+                    <i class="fa-brands fa-instagram"></i>
+                    <i class="fa-brands fa-facebook-f"></i>
+                    <i class="fa-brands fa-whatsapp"></i>
+                </div>
+            </div>
+
+            <div>
+                <h3>Menú</h3>
+
+                <div class="footer-links">
+                    <a href="#">Inicio</a>
+                    <a href="#">Catálogo</a>
+                    <a href="#">Pedidos</a>
+                    <a href="#">Dashboard</a>
+                    <a href="#">Clientes</a>
+                </div>
+            </div>
+
+            <div>
+                <h3>Contacto</h3>
+
+                <div class="footer-links">
+                    <a href="#">sbaveca@gmail.com</a>
+                    <a href="#">3704-324818</a>
+                    <a href="#">Formosa, Argentina</a>
+                </div>
+            </div>
+
+            <div>
+                <h3>Desarrolladores</h3>
+
+                <div class="footer-links">
+                    <a href="#">Lourdes Antonella Bordon Sbardella</a>
+                    <a href="#">Facundo Matías Cáceres</a>
+                    <a href="#">Franco Agustín Vega</a>
+                </div>
+            </div>
+
+        </div>
+
+    </footer>
+
+</body>
+</html>
