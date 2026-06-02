@@ -1,0 +1,37 @@
+# Node
+node_modules/
+npm-debug.log
+package-lock.json
+
+# PHP / Laravel
+/vendor/
+/.env
+/.env.*
+Homestead.yaml
+Homestead.json
+/storage/*.key
+/public/storage
+/storage/framework/cache/data
+/storage/logs/*.log
+
+# IDEs
+.vscode/
+.idea/
+*.sublime-workspace
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Build
+dist/
+build/
+
+# Composer
+composer.lock
+
+# Misc
+*.log
+
+# Ignore nested repo git dir
+api_sbaveca/.git
