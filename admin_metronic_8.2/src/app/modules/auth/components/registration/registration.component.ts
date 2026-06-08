@@ -87,16 +87,13 @@ export class RegistrationComponent implements OnInit, OnDestroy {
 
   submit() {
     this.hasError = false;
-    const result: {
-      [key: string]: string;
-    } = {};
-    Object.keys(this.f).forEach((key) => {
-      result[key] = this.f[key].value;
-    });
-    const newUser = new UserModel();
-    newUser.setUser(result);
+    const payload = {
+      name: this.f.fullname.value,
+      email: this.f.email.value,
+      password: this.f.password.value,
+    };
     const registrationSubscr = this.authService
-      .registration(newUser)
+      .registration(payload)
       .pipe(first())
       .subscribe((user: UserModel) => {
         if (user) {
