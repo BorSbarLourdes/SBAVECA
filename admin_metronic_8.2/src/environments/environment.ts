@@ -7,7 +7,7 @@ export const environment = {
   appVersion: 'v8.1.8',
   USERDATA_KEY: 'authf649fc9a5f55',
   isMockEnabled: false,
-  apiUrl: 'http://127.0.0.1:8080/api',
+  apiUrl: 'http://localhost/SBAVECA/api',
   appThemeName: 'Metronic',
   appPurchaseUrl: 'https://1.envato.market/EA4JP',
   appHTMLIntegration:
@@ -159,8 +159,8 @@ export const environment = {
       thumbnail: './assets/media/demos/demo20.png',
     },
   },
-  URL_BACKEND: 'http://127.0.0.1:8080/',
-  URL_SERVICIOS: 'http://127.0.0.1:8080/api',
+  URL_BACKEND: 'http://localhost/SBAVECA/',
+  URL_SERVICIOS: 'http://localhost/SBAVECA/api',
   URL_FRONTEND: ' http://localhost:5000/'
 };
 

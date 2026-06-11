@@ -42,6 +42,7 @@
           'is-invalid': registrationForm.controls['firstname'].invalid,
           'is-valid': registrationForm.controls['firstname'].valid
         }" />
+      <div class="form-text text-muted custom-help-text">Mínimo 3 y máximo 50 caracteres.</div>
       <ng-container [ngTemplateOutlet]="formError" [ngTemplateOutletContext]="{
           validation: 'required',
           message: 'Se requiere nombre',
@@ -60,6 +61,7 @@
           'is-invalid': registrationForm.controls['lastname'].invalid,
           'is-valid': registrationForm.controls['lastname'].valid
         }" />
+      <div class="form-text text-muted custom-help-text">Mínimo 3 y máximo 50 caracteres.</div>
       <ng-container [ngTemplateOutlet]="formError" [ngTemplateOutletContext]="{
           validation: 'required',
           message: 'Se requiere apellido',
@@ -83,6 +85,7 @@
           'is-invalid': registrationForm.controls['dob'].invalid,
           'is-valid': registrationForm.controls['dob'].valid
         }" />
+      <div class="form-text text-muted custom-help-text">Selecciona tu fecha de nacimiento.</div>
       <ng-container [ngTemplateOutlet]="formError" [ngTemplateOutletContext]="{
           validation: 'required',
           message: 'Se requiere fecha de nacimiento',
@@ -96,6 +99,7 @@
           'is-invalid': registrationForm.controls['phone'].invalid,
           'is-valid': registrationForm.controls['phone'].valid
         }" />
+      <div class="form-text text-muted custom-help-text">Mínimo 5 y máximo 20 dígitos.</div>
       <ng-container [ngTemplateOutlet]="formError" [ngTemplateOutletContext]="{
           validation: 'required',
           message: 'Se requiere teléfono',
@@ -119,6 +123,7 @@
           'is-invalid': registrationForm.controls['address'].invalid,
           'is-valid': registrationForm.controls['address'].valid
         }" />
+      <div class="form-text text-muted custom-help-text">Mínimo 3 y máximo 150 caracteres.</div>
       <ng-container [ngTemplateOutlet]="formError" [ngTemplateOutletContext]="{
           validation: 'required',
           message: 'Se requiere dirección',
@@ -137,6 +142,7 @@
           'is-invalid': registrationForm.controls['username'].invalid,
           'is-valid': registrationForm.controls['username'].valid
         }" />
+      <div class="form-text text-muted custom-help-text">Mínimo 3 y máximo 50 caracteres (letras/números).</div>
       <ng-container [ngTemplateOutlet]="formError" [ngTemplateOutletContext]="{
           validation: 'required',
           message: 'Se requiere usuario',
@@ -159,6 +165,7 @@
         'is-invalid': registrationForm.controls['email'].invalid,
         'is-valid': registrationForm.controls['email'].valid
       }" />
+    <div class="form-text text-muted custom-help-text">Ingresa un correo válido (ej: nombre@correo.com).</div>
     <ng-container [ngTemplateOutlet]="formError" [ngTemplateOutletContext]="{
         validation: 'required',
         message: 'Se requiere correo electrónico',
@@ -186,6 +193,7 @@
           'is-invalid': registrationForm.controls['password'].invalid,
           'is-valid': registrationForm.controls['password'].valid
         }" />
+      <div class="form-text text-muted custom-help-text">Mínimo 3 y máximo 100 caracteres.</div>
       <ng-container [ngTemplateOutlet]="formError" [ngTemplateOutletContext]="{
           validation: 'required',
           message: 'Se requiere contraseña',
@@ -204,6 +212,7 @@
           'is-invalid': registrationForm.controls['cPassword'].invalid,
           'is-valid': registrationForm.controls['cPassword'].valid
         }" />
+      <div class="form-text text-muted custom-help-text">Debe ser idéntica a la contraseña ingresada.</div>
       <ng-container [ngTemplateOutlet]="formError" [ngTemplateOutletContext]="{
           validation: 'required',
           message: 'Se requiere confirmar contraseña',

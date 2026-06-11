@@ -107,3 +107,14 @@ a.link-primary,
   background-color: #401F0E !important;
   border-color: #401F0E !important;
 }
+
+/* Helper text visible on focus */
+.custom-help-text {
+  display: none;
+  font-size: 0.8rem;
+  color: #B45F3F !important;
+  margin-top: 4px;
+}
+input:focus ~ .custom-help-text {
+  display: block;
+}
