@@ -22,7 +22,7 @@ export class AuthHTTPService {
   }
 
   // CREATE =>  POST: add a new user to the server
-  createUser(payload: { name: string; email: string; password: string }): Observable<UserModel> {
+  createUser(payload: any): Observable<UserModel> {
     return this.http.post<UserModel>(`${API_USERS_URL}/register`, payload);
   }
 

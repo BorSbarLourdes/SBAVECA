@@ -32,3 +32,78 @@
 .toast-warning {
     background-color: #ffe1b6 !important;
 }
+
+/* Custom Typography Settings */
+h1, h2, h3, h4, h5, h6, .card-title, .modal-title {
+  font-family: 'Playfair Display', Georgia, serif !important;
+}
+
+body, input, button, select, textarea, label, .form-control, .form-label, .btn {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+/* Custom Brand Palette Colors */
+body, .bg-body, [data-bs-theme="light"], .bg-light {
+  background-color: #FAF5EB !important;
+}
+
+// Override primary buttons (Submit buttons)
+.btn.btn-primary {
+  background-color: #401F0E !important;
+  border-color: #401F0E !important;
+  color: #ffffff !important;
+  font-weight: 600;
+  transition: all 0.3s ease;
+
+  &:hover, &:focus, &:active, &.active, &.show {
+    background-color: #B45F3F !important;
+    border-color: #B45F3F !important;
+    color: #ffffff !important;
+  }
+  
+  &:disabled {
+    background-color: #7a462b !important;
+    border-color: #7a462b !important;
+    opacity: 0.65;
+  }
+}
+
+// Override outline buttons (like Google link)
+.btn.btn-outline {
+  border-color: rgba(64, 31, 14, 0.2) !important;
+  color: #401F0E !important;
+  background-color: transparent !important;
+  transition: all 0.3s ease;
+
+  &:hover, &:focus, &:active, &.active {
+    background-color: #401F0E !important;
+    border-color: #401F0E !important;
+    color: #ffffff !important;
+  }
+}
+
+// Customize link colors (including 'Términos y condiciones')
+a.link-primary,
+.link-primary,
+.form-check-label a {
+  color: #B45F3F !important;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.2s ease-in-out;
+
+  &:hover, &:focus {
+    color: #401F0E !important;
+    text-decoration: underline !important;
+  }
+}
+
+// Customize form-control focus styling
+.form-control:focus {
+  border-color: #B45F3F !important;
+}
+
+// Checkbox custom color when checked
+.form-check-input:checked {
+  background-color: #401F0E !important;
+  border-color: #401F0E !important;
+}

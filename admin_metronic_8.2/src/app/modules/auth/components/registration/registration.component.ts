@@ -44,16 +44,54 @@ export class RegistrationComponent implements OnInit, OnDestroy {
   initForm() {
     this.registrationForm = this.fb.group(
       {
-        fullname: [
+        firstname: [
           '',
           Validators.compose([
             Validators.required,
             Validators.minLength(3),
-            Validators.maxLength(100),
+            Validators.maxLength(50),
+          ]),
+        ],
+        lastname: [
+          '',
+          Validators.compose([
+            Validators.required,
+            Validators.minLength(3),
+            Validators.maxLength(50),
+          ]),
+        ],
+        dob: [
+          '',
+          Validators.compose([
+            Validators.required,
+          ]),
+        ],
+        phone: [
+          '',
+          Validators.compose([
+            Validators.required,
+            Validators.minLength(5),
+            Validators.maxLength(20),
+          ]),
+        ],
+        address: [
+          '',
+          Validators.compose([
+            Validators.required,
+            Validators.minLength(3),
+            Validators.maxLength(150),
+          ]),
+        ],
+        username: [
+          '',
+          Validators.compose([
+            Validators.required,
+            Validators.minLength(3),
+            Validators.maxLength(50),
           ]),
         ],
         email: [
-          'qwe@qwe.qwe',
+          '',
           Validators.compose([
             Validators.required,
             Validators.email,
@@ -88,9 +126,23 @@ export class RegistrationComponent implements OnInit, OnDestroy {
   submit() {
     this.hasError = false;
     const payload = {
-      name: this.f.fullname.value,
+      name: this.f.firstname.value + ' ' + this.f.lastname.value,
+      firstname: this.f.firstname.value,
+      lastname: this.f.lastname.value,
+      dob: this.f.dob.value,
+      phone: this.f.phone.value,
+      address: this.f.address.value,
+      username: this.f.username.value,
       email: this.f.email.value,
       password: this.f.password.value,
+      // Map to Spanish / database keys as well to be robust
+      nombre: this.f.firstname.value,
+      apellido: this.f.lastname.value,
+      fechaNacimiento: this.f.dob.value,
+      telefono: this.f.phone.value,
+      direccion: this.f.address.value,
+      usuario: this.f.username.value,
+      contrasena: this.f.password.value
     };
     const registrationSubscr = this.authService
       .registration(payload)

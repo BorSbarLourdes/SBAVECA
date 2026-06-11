@@ -1,14 +1,19 @@
 <!--begin::Form-->
 <form class="form w-100" [formGroup]="loginForm" novalidate="novalidate" id="kt_login_signin_form"
   (ngSubmit)="submit()">
+  <!--begin::Logo-->
+  <div class="text-start mb-6">
+    <img alt="Logo" src="./assets/media/sbavecaLogo.png" class="h-60px h-lg-75px" />
+  </div>
+  <!--end::Logo-->
   <!--begin::Heading-->
-  <div class="text-center mb-11">
+  <div class="text-start mb-9">
     <h1 class="text-gray-900 fw-bolder mb-3">
-      Sign In
+      Iniciar sesión
     </h1>
     <!--begin::Subtitle-->
     <div class="text-gray-500 fw-semibold fs-6">
-      Your Social Campaigns
+      Solución ERP modular para establecimientos gastronómicos
     </div>
     <!--end::Subtitle--->
     <!-- <div class="text-gray-500 fw-bold fs-4">
@@ -23,58 +28,12 @@
   </div>
   <!--end::Heading-->
 
-  <!--begin::Login options-->
-  <div class="row g-3 mb-9">
-    <!--begin::Col-->
-    <div class="col-md-6">
-      <!--begin::Google link--->
-      <a href="#"
-        class="btn btn-flex btn-outline btn-text-gray-700 btn-active-color-primary bg-state-light flex-center text-nowrap w-100">
-        <img alt="Logo" src="./assets/media/svg/brand-logos/google-icon.svg" class="h-15px me-3" />
-        Sign in with Google
-      </a>
-      <!--end::Google link--->
-    </div>
-    <!--end::Col-->
-
-    <!--begin::Col-->
-    <div class="col-md-6">
-      <!--begin::Google link--->
-      <a href="#"
-        class="btn btn-flex btn-outline btn-text-gray-700 btn-active-color-primary bg-state-light flex-center text-nowrap w-100">
-        <img alt="Logo" src="./assets/media/svg/brand-logos/apple-black.svg" class="theme-light-show h-15px me-3" />
-        <img alt="Logo" src="./assets/media/svg/brand-logos/apple-black-dark.svg" class="theme-dark-show h-15px me-3" />
-        Sign in with Apple
-      </a>
-      <!--end::Google link--->
-    </div>
-    <!--end::Col-->
-  </div>
-  <!--end::Login options-->
-
-  <!--begin::Separator-->
-  <div class="separator separator-content my-14">
-    <span class="w-125px text-gray-500 fw-semibold fs-7">Or with email</span>
-  </div>
-  <!--end::Separator-->
-
-  <!-- begin::Alert info-->
-  <ng-container *ngIf="!hasError">
-    <div class="mb-10 bg-light-info p-8 rounded">
-      <div class="text-info">
-        Use account <strong>{{ defaultAuth.email }}</strong> and password
-        <strong>{{ defaultAuth.password }}</strong> to continue.
-      </div>
-    </div>
-  </ng-container>
-  <!-- end::Alert info-->
-
 
   <!-- begin::Alert error-->
   <ng-container *ngIf="hasError">
     <div class="mb-lg-15 alert alert-danger">
       <div class="alert-text font-weight-bold">
-        The login details are incorrect
+        El email y/o la contraseña son incorrectos.
       </div>
     </div>
   </ng-container>
@@ -82,7 +41,7 @@
 
   <!--begin::Form group-->
   <div class="fv-row mb-8">
-    <label class="form-label fs-6 fw-bolder text-gray-900">Email</label>
+    <label class="form-label fs-6 fw-bolder text-gray-900">Correo electrónico</label>
     <input class="form-control bg-transparent" type="email" name="email" formControlName="email" autocomplete="off"
       [ngClass]="{
         'is-invalid': loginForm.controls['email'].invalid,
@@ -114,7 +73,7 @@
   <!--begin::Form group-->
   <div class="fv-row mb-3">
 
-    <label class="form-label fw-bolder text-gray-900 fs-6 mb-0">Password</label>
+    <label class="form-label fw-bolder text-gray-900 fs-6 mb-0">Contraseña</label>
 
     <input class="form-control bg-transparent" type="password" name="password" autocomplete="off"
       formControlName="password" [ngClass]="{
@@ -146,32 +105,44 @@
 
     <!--begin::Link-->
     <a routerLink="/auth/forgot-password" class="link-primary">
-      Forgot Password ?
+      ¿Olvidaste tu contraseña?
     </a>
     <!--end::Link-->
   </div>
   <!--end::Wrapper-->
 
   <!--begin::Action-->
-  <div class="d-grid mb-10">
+  <div class="d-grid mb-5">
     <button type="submit" id="kt_sign_in_submit" class="btn btn-primary" [disabled]="loginForm.invalid">
       <ng-container *ngIf="isLoading$ | async">
         <span class="indicator-progress" [style.display]="'block'">
-          Please wait...
+          Espere por favor...
           <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
         </span>
       </ng-container>
       <ng-container *ngIf="(isLoading$ | async) === false">
-        <span class="indicator-label">Continue</span>
+        <span class="indicator-label">Iniciar sesión</span>
       </ng-container>
     </button>
   </div>
 
+
+
+  <!--begin::Google link--->
+  <div class="d-grid mb-5">
+    <a href="#"
+      class="btn btn-flex btn-outline btn-text-gray-700 btn-active-color-primary bg-state-light flex-center text-nowrap w-100">
+      <img alt="Logo" src="./assets/media/svg/brand-logos/google-icon.svg" class="h-15px me-3" />
+      Iniciar sesión con Google
+    </a>
+  </div>
+  <!--end::Google link--->
+
   <div class="text-gray-500 text-center fw-semibold fs-6">
-    Not a Member yet?
+    ¿No estás registrado aún?
 
     <a routerLink="/auth/registration" class="link-primary">
-      Sign up
+      Registrate
     </a>
   </div>
 
