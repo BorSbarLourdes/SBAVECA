@@ -107,18 +107,20 @@
           <!--end::Input group-->
 
           <div class="mb-7">
-            <label class="required fw-semibold fs-6 mb-5">Role</label>
+            <label class="required fw-semibold fs-6 mb-5">Roles</label>
 
             <div *ngFor="let role of (roles$ | async)?.data; let last = last">
               <div class="d-flex fv-row">
                 <div class="form-check form-check-custom form-check-solid">
-                  <input class="form-check-input me-3" id="kt_modal_update_role_option_{{ role.id }}" name="role" #role="ngModel" [(ngModel)]="userModel.role" type="radio" [value]="role.name" [checked]="last" />
+                  <input class="form-check-input me-3" 
+                         id="kt_modal_update_role_option_{{ role.id }}" 
+                         name="role_{{ role.id }}" 
+                         type="checkbox" 
+                         [checked]="isRoleSelected(role.id)"
+                         (change)="toggleRole(role)" />
                   <label class="form-check-label" for="kt_modal_update_role_option_{{ role.id }}">
                     <div class="fw-bold text-gray-800">
                       {{ role.name | titlecase }}
-                    </div>
-                    <div class="text-gray-600">
-                      {{ role.name }}
                     </div>
                   </label>
                 </div>

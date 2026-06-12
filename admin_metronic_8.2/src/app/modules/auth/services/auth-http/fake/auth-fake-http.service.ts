@@ -31,7 +31,7 @@ export class AuthHTTPService {
 
         const user = result.find((u) => {
           return (
-            u.email.toLowerCase() === email.toLowerCase() &&
+            u.username.toLowerCase() === email.toLowerCase() &&
             u.password === password
           );
         });

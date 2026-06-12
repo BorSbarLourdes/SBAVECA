@@ -193,7 +193,7 @@
           'is-invalid': registrationForm.controls['password'].invalid,
           'is-valid': registrationForm.controls['password'].valid
         }" />
-      <div class="form-text text-muted custom-help-text">Mínimo 3 y máximo 100 caracteres.</div>
+      <div class="form-text text-muted custom-help-text">Mínimo 8 caracteres (sin espacios), incluyendo números y caracteres especiales.</div>
       <ng-container [ngTemplateOutlet]="formError" [ngTemplateOutletContext]="{
           validation: 'required',
           message: 'Se requiere contraseña',
@@ -201,7 +201,12 @@
         }"></ng-container>
       <ng-container [ngTemplateOutlet]="formError" [ngTemplateOutletContext]="{
           validation: 'minlength',
-          message: 'La contraseña debe tener al menos 3 caracteres',
+          message: 'La contraseña debe tener al menos 8 caracteres',
+          control: registrationForm.controls['password']
+        }"></ng-container>
+      <ng-container [ngTemplateOutlet]="formError" [ngTemplateOutletContext]="{
+          validation: 'pattern',
+          message: 'La contraseña debe incluir números y caracteres especiales, sin espacios',
           control: registrationForm.controls['password']
         }"></ng-container>
     </div>

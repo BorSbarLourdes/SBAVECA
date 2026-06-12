@@ -2,8 +2,8 @@ export class UsersTable {
   public static users: any = [
     {
       id: 1,
-      username: 'admin',
-      password: 'demo',
+      username: 'administrator',
+      password: 'Password123!',
       email: 'admin@demo.com',
       authToken: 'auth-token-8f3ae836da744329a6f93bf20594b5cc',
       refreshToken: 'auth-token-f8c137a2c98743f48b643e71161d90aa',
@@ -38,8 +38,8 @@ export class UsersTable {
     },
     {
       id: 2,
-      username: 'user',
-      password: 'demo',
+      username: 'empleado1',
+      password: 'Password123!',
       email: 'user@demo.com',
       authToken: 'auth-token-6829bba69dd3421d8762-991e9e806dbf',
       refreshToken: 'auth-token-f8e4c61a318e4d618b6c199ef96b9e55',
@@ -73,8 +73,8 @@ export class UsersTable {
     },
     {
       id: 3,
-      username: 'guest',
-      password: 'demo',
+      username: 'cliente1',
+      password: 'Password123!',
       email: 'guest@demo.com',
       authToken: 'auth-token-d2dff7b82f784de584b60964abbe45b9',
       refreshToken: 'auth-token-c999ccfe74aa40d0aa1a64c5e620c1a5',

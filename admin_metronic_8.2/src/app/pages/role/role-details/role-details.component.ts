@@ -1,8 +1,11 @@
-import { Component, EventEmitter, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnInit, TemplateRef, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
 import { IRoleModel, RoleService } from 'src/app/_fake/services/role.service';
 import moment from 'moment';
+import { NgbModal, NgbModalOptions } from '@ng-bootstrap/ng-bootstrap';
+import { StateService } from '../../state.service';
+import { NgForm } from '@angular/forms';
 
 @Component({
   selector: 'app-role-details',
@@ -12,24 +15,41 @@ import moment from 'moment';
 export class RoleDetailsComponent implements OnInit {
 
   role$: Observable<IRoleModel>;
+  roleId: number;
 
   datatableConfig: DataTables.Settings = {};
 
   // Reload emitter inside datatable
   reloadEvent: EventEmitter<boolean> = new EventEmitter();
 
-  constructor(private route: ActivatedRoute, private apiService: RoleService) { }
+  // Modal setup
+  roleModel: IRoleModel = { id: 0, name: '', permissions: [], users: [] };
+  isLoading = false;
+
+  @ViewChild('formModal')
+  formModal: TemplateRef<any>;
+
+  modalConfig: NgbModalOptions = {
+    modalDialogClass: 'modal-dialog modal-dialog-centered mw-650px',
+  };
+
+  constructor(
+    private route: ActivatedRoute, 
+    private apiService: RoleService,
+    private modalService: NgbModal,
+    private stateService: StateService,
+    private cdr: ChangeDetectorRef
+  ) { }
 
   ngOnInit(): void {
     this.route.params.subscribe(params => {
-      const id = params['id'];
-      this.role$ = this.apiService.getRole(id);
+      this.roleId = +params['id'];
+      this.loadRole();
 
       this.datatableConfig = {
         serverSide: true,
         ajax: (dataTablesParameters: any, callback) => {
-          this.apiService.getUsers(id, dataTablesParameters).subscribe(resp => {
-            console.log(resp);
+          this.apiService.getUsers(this.roleId, dataTablesParameters).subscribe(resp => {
             callback(resp);
           });
         },
@@ -92,13 +112,66 @@ export class RoleDetailsComponent implements OnInit {
     });
   }
 
+  loadRole() {
+    this.role$ = this.apiService.getRole(this.roleId);
+  }
+
   deleteUser(user_id: number) {
-    this.route.params.subscribe(params => {
-      const role_id = params['id'];
-      this.apiService.deleteUser(role_id, user_id).subscribe(() => {
-        this.reloadEvent.emit(true);
-      });
+    this.apiService.deleteUser(this.roleId, user_id).subscribe(() => {
+      this.reloadEvent.emit(true);
+      this.loadRole();
+      this.cdr.detectChanges();
     });
   }
 
+  openEditModal() {
+    this.apiService.getRole(this.roleId).subscribe((role: IRoleModel) => {
+      this.roleModel = role;
+      if (!this.roleModel.permissions) {
+        this.roleModel.permissions = [];
+      }
+      this.modalService.open(this.formModal, this.modalConfig);
+    });
+  }
+
+  get permissions() {
+    return this.stateService.systemPermissions$.value;
+  }
+
+  isPermissionSelected(permId: number): boolean {
+    if (!this.roleModel || !this.roleModel.permissions) return false;
+    return this.roleModel.permissions.some(p => p.id === permId);
+  }
+
+  togglePermission(permObj: any) {
+    if (!this.roleModel.permissions) {
+      this.roleModel.permissions = [];
+    }
+    const idx = this.roleModel.permissions.findIndex(p => p.id === permObj.id);
+    if (idx !== -1) {
+      this.roleModel.permissions.splice(idx, 1);
+    } else {
+      this.roleModel.permissions.push(permObj);
+    }
+  }
+
+  onSubmit(event: Event, myForm: NgForm) {
+    if (myForm && myForm.invalid) {
+      return;
+    }
+
+    this.isLoading = true;
+    this.apiService.updateRole(this.roleId, this.roleModel).subscribe({
+      next: () => {
+        this.isLoading = false;
+        this.modalService.dismissAll();
+        this.loadRole();
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error(error);
+        this.isLoading = false;
+      }
+    });
+  }
 }

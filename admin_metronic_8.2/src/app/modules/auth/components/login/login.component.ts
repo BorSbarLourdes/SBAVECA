@@ -14,8 +14,9 @@ import { ActivatedRoute, Router } from '@angular/router';
 export class LoginComponent implements OnInit, OnDestroy {
   // KeenThemes mock, change it to:
   defaultAuth: any = {
-    email: '',
+    username: '',
     password: '',
+    rememberMe: false
   };
   loginForm: FormGroup;
   hasError: boolean;
@@ -43,6 +44,15 @@ export class LoginComponent implements OnInit, OnDestroy {
     // get return url from route parameters or default to '/'
     this.returnUrl =
       this.route.snapshot.queryParams['returnUrl'.toString()] || '/';
+
+    // Load remembered username
+    const remembered = localStorage.getItem('sbaveca_remembered_username');
+    if (remembered) {
+      this.loginForm.patchValue({
+        username: remembered,
+        rememberMe: true
+      });
+    }
   }
 
   // convenience getter for easy access to form fields
@@ -52,33 +62,41 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   initForm() {
     this.loginForm = this.fb.group({
-      email: [
-        this.defaultAuth.email,
-        Validators.compose([
-          Validators.required,
-          Validators.email,
-          Validators.minLength(3),
-          Validators.maxLength(320), // https://stackoverflow.com/questions/386294/what-is-the-maximum-length-of-a-valid-email-address
-        ]),
-      ],
-      password: [
-        this.defaultAuth.password,
+      username: [
+        this.defaultAuth.username,
         Validators.compose([
           Validators.required,
           Validators.minLength(3),
           Validators.maxLength(100),
         ]),
       ],
+      password: [
+        this.defaultAuth.password,
+        Validators.compose([
+          Validators.required,
+          Validators.pattern(/^(?=.*[0-9])(?=.*[^a-zA-Z0-9\s])\S{8,}$/),
+        ]),
+      ],
+      rememberMe: [
+        this.defaultAuth.rememberMe
+      ]
     });
   }
 
   submit() {
     this.hasError = false;
     const loginSubscr = this.authService
-      .login(this.f.email.value, this.f.password.value)
+      .login(this.f.username.value, this.f.password.value)
       .pipe(first())
       .subscribe((user: UserModel | undefined) => {
         if (user) {
+          if (this.f.rememberMe.value) {
+            localStorage.setItem('sbaveca_remembered_username', this.f.username.value);
+          } else {
+            localStorage.removeItem('sbaveca_remembered_username');
+          }
+          // Reset inactivity
+          this.authService.resetInactivity();
           this.router.navigate([this.returnUrl]);
         } else {
           this.hasError = true;

@@ -6,6 +6,7 @@ import { AuthModel } from '../models/auth.model';
 import { AuthHTTPService } from './auth-http';
 import { environment } from 'src/environments/environment';
 import { Router } from '@angular/router';
+import { StateService } from '../../../pages/state.service';
 
 export type UserType = UserModel | undefined;
 
@@ -31,46 +32,154 @@ export class AuthService implements OnDestroy {
     this.currentUserSubject.next(user);
   }
 
+  private inactivityTimer: any;
+  private INACTIVITY_TIMEOUT = 60 * 60 * 1000; // 1 hora (60 minutos)
+
   constructor(
     private authHttpService: AuthHTTPService,
-    private router: Router
+    private router: Router,
+    private stateService: StateService
   ) {
     this.isLoadingSubject = new BehaviorSubject<boolean>(false);
     this.currentUserSubject = new BehaviorSubject<UserType>(undefined);
     this.currentUser$ = this.currentUserSubject.asObservable();
     this.isLoading$ = this.isLoadingSubject.asObservable();
-    const subscr = this.getUserByToken().subscribe();
+    const subscr = this.getUserByToken().subscribe(user => {
+      if (user) {
+        this.resetInactivity();
+      }
+    });
     this.unsubscribe.push(subscr);
+
+    // Actividad del usuario (clicks, mouse, scroll, teclado)
+    const activityEvents = ['mousemove', 'click', 'keypress', 'scroll', 'touchstart'];
+    activityEvents.forEach(event => {
+      window.addEventListener(event, () => this.resetInactivity());
+    });
   }
 
   // public methods
-  login(email: string, password: string): Observable<UserType> {
+  login(username: string, password: string): Observable<UserType> {
     this.isLoadingSubject.next(true);
-    return this.authHttpService.login(email, password).pipe(
-      map((auth: AuthModel) => {
-        const result = this.setAuthFromLocalStorage(auth);
-        return result;
-      }),
-      switchMap(() => this.getUserByToken()),
-      catchError((err) => {
-        console.error('err', err);
+
+    if (environment.isMockEnabled) {
+      const users = this.stateService.systemUsers$.value;
+      const foundUser = users.find(
+        (u: any) =>
+          (u.username.toLowerCase() === username.toLowerCase() ||
+           u.email.toLowerCase() === username.toLowerCase()) &&
+          u.password === password
+      );
+
+      if (foundUser) {
+        const auth = new AuthModel();
+        auth.authToken = `local-auth-token-${foundUser.id}`;
+        auth.refreshToken = `local-auth-token-${foundUser.id}`;
+        auth.expiresIn = new Date(Date.now() + 100 * 24 * 60 * 60 * 1000);
+
+        this.setAuthFromLocalStorage(auth);
+
+        // Map roles
+        const roles = this.stateService.systemRoles$.value;
+        const userRoles = roles.filter((r: any) => foundUser.roleIds.includes(r.id));
+
+        const userModel = new UserModel();
+        userModel.id = foundUser.id;
+        userModel.username = foundUser.username;
+        userModel.fullname = foundUser.name;
+        userModel.email = foundUser.email;
+        userModel.roles = foundUser.roleIds;
+        userModel.role = userRoles.map((r: any) => r.name).join(', ');
+        userModel.pic = foundUser.id === 1 ? './assets/media/avatars/300-1.jpg' : foundUser.id === 2 ? './assets/media/avatars/300-6.jpg' : './assets/media/avatars/300-20.jpg';
+
+        this.currentUserSubject.next(userModel);
+        this.resetInactivity();
+        this.isLoadingSubject.next(false);
+        return of(userModel);
+      } else {
+        this.isLoadingSubject.next(false);
         return of(undefined);
-      }),
-      finalize(() => this.isLoadingSubject.next(false))
-    );
+      }
+    } else {
+      return this.authHttpService.login(username, password).pipe(
+        map((auth: any) => {
+          if (auth && auth.authToken) {
+            this.setAuthFromLocalStorage(auth);
+            return auth;
+          }
+          return undefined;
+        }),
+        switchMap((auth) => {
+          if (auth) {
+            return this.getUserByToken();
+          }
+          return of(undefined);
+        }),
+        catchError((err) => {
+          console.error('login err', err);
+          return of(undefined);
+        }),
+        finalize(() => this.isLoadingSubject.next(false))
+      );
+    }
   }
 
   logout() {
+    this.stopInactivityTimer();
     localStorage.removeItem(this.authLocalStorageToken);
+    this.currentUserSubject.next(undefined);
     this.router.navigate(['/auth/login'], {
       queryParams: {},
     });
+  }
+
+  private startInactivityTimer() {
+    this.stopInactivityTimer();
+    this.inactivityTimer = setTimeout(() => {
+      this.logout();
+      alert('Sesión finalizada por inactividad.');
+    }, this.INACTIVITY_TIMEOUT);
+  }
+
+  private stopInactivityTimer() {
+    if (this.inactivityTimer) {
+      clearTimeout(this.inactivityTimer);
+    }
+  }
+
+  public resetInactivity() {
+    if (this.currentUserValue) {
+      this.startInactivityTimer();
+    }
   }
 
   getUserByToken(): Observable<UserType> {
     const auth = this.getAuthFromLocalStorage();
     if (!auth || !auth.authToken) {
       return of(undefined);
+    }
+
+    const token = auth.authToken;
+    if (token.startsWith('local-auth-token-')) {
+      const id = parseInt(token.replace('local-auth-token-', ''));
+      const users = this.stateService.systemUsers$.value;
+      const foundUser = users.find((u: any) => u.id === id);
+      if (foundUser) {
+        const roles = this.stateService.systemRoles$.value;
+        const userRoles = roles.filter((r: any) => foundUser.roleIds.includes(r.id));
+
+        const userModel = new UserModel();
+        userModel.id = foundUser.id;
+        userModel.username = foundUser.username;
+        userModel.fullname = foundUser.name;
+        userModel.email = foundUser.email;
+        userModel.roles = foundUser.roleIds;
+        userModel.role = userRoles.map((r: any) => r.name).join(', ');
+        userModel.pic = foundUser.id === 1 ? './assets/media/avatars/300-1.jpg' : foundUser.id === 2 ? './assets/media/avatars/300-6.jpg' : './assets/media/avatars/300-20.jpg';
+
+        this.currentUserSubject.next(userModel);
+        return of(userModel);
+      }
     }
 
     this.isLoadingSubject.next(true);
@@ -83,6 +192,10 @@ export class AuthService implements OnDestroy {
         }
         return user;
       }),
+      catchError(() => {
+        this.logout();
+        return of(undefined);
+      }),
       finalize(() => this.isLoadingSubject.next(false))
     );
   }
@@ -90,17 +203,31 @@ export class AuthService implements OnDestroy {
   // need create new user then login
   registration(user: any): Observable<any> {
     this.isLoadingSubject.next(true);
-    return this.authHttpService.createUser(user).pipe(
-      map(() => {
-        this.isLoadingSubject.next(false);
-      }),
-      switchMap(() => this.login(user.email, user.password)),
-      catchError((err) => {
-        console.error('err', err);
-        return of(undefined);
-      }),
-      finalize(() => this.isLoadingSubject.next(false))
-    );
+    if (environment.isMockEnabled) {
+      const mockUser = {
+        id: 0,
+        name: user.firstname + ' ' + user.lastname,
+        username: user.email.split('@')[0],
+        email: user.email,
+        password: user.password,
+        roleIds: [3], // Cliente role
+      };
+      this.stateService.saveSystemUser(mockUser);
+      this.isLoadingSubject.next(false);
+      return this.login(user.email, user.password);
+    } else {
+      return this.authHttpService.createUser(user).pipe(
+        map(() => {
+          this.isLoadingSubject.next(false);
+        }),
+        switchMap(() => this.login(user.email, user.password)),
+        catchError((err) => {
+          console.error('err', err);
+          return of(undefined);
+        }),
+        finalize(() => this.isLoadingSubject.next(false))
+      );
+    }
   }
 
   forgotPassword(email: string): Observable<boolean> {

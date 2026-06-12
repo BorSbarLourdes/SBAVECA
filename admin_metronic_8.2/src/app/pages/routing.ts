@@ -47,6 +47,38 @@ const Routing: Routes = [
     loadChildren: () => import('./permission/permission.module').then((m) => m.PermissionModule),
   },
   {
+    path: 'stock',
+    loadChildren: () => import('./stock/stock.module').then((m) => m.StockModule),
+  },
+  {
+    path: 'clientes',
+    loadChildren: () => import('./clientes/clientes.module').then((m) => m.ClientesModule),
+  },
+  {
+    path: 'recetas',
+    loadChildren: () => import('./recetas/recetas.module').then((m) => m.RecetasModule),
+  },
+  {
+    path: 'pedidos',
+    loadChildren: () => import('./pedidos/pedidos.module').then((m) => m.PedidosModule),
+  },
+  {
+    path: 'ventas',
+    loadChildren: () => import('./ventas/ventas.module').then((m) => m.VentasModule),
+  },
+  {
+    path: 'recetario-costes',
+    loadChildren: () => import('./recetario-costes/recetario-costes.module').then((m) => m.RecetarioCostesModule),
+  },
+  {
+    path: 'empleados',
+    loadChildren: () => import('./empleados/empleados.module').then((m) => m.EmpleadosModule),
+  },
+  {
+    path: 'menu-semanal',
+    loadChildren: () => import('./menu-semanal/menu-semanal.module').then((m) => m.MenuSemanalModule),
+  },
+  {
     path: '',
     redirectTo: '/dashboard',
     pathMatch: 'full',

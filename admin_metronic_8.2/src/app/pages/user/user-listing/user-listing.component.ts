@@ -82,8 +82,10 @@ export class UserListingComponent implements OnInit, AfterViewInit, OnDestroy {
         },
         {
           title: 'Role', data: 'role', render: function (data, type, row) {
-            const roleName = row.roles[0]?.name;
-            return roleName || '';
+            if (row.roles && row.roles.length > 0) {
+              return row.roles.map((r: any) => r.name).join(', ');
+            }
+            return '';
           },
           orderData: [1],
           orderSequence: ['asc', 'desc'],
@@ -120,11 +122,36 @@ export class UserListingComponent implements OnInit, AfterViewInit, OnDestroy {
     this.aUser = this.apiService.getUser(id);
     this.aUser.subscribe((user: IUserModel) => {
       this.userModel = user;
+      if (!this.userModel.roles) {
+        this.userModel.roles = [];
+      }
     });
   }
 
   create() {
-    this.userModel = { id: 0, name: '', email: '', };
+    this.userModel = { id: 0, name: '', email: '', roles: [] };
+  }
+
+  isRoleSelected(roleId: number): boolean {
+    if (!this.userModel || !this.userModel.roles) return false;
+    return this.userModel.roles.some(r => r.id === roleId);
+  }
+
+  toggleRole(roleObj: any) {
+    if (!this.userModel.roles) {
+      this.userModel.roles = [];
+    }
+    const idx = this.userModel.roles.findIndex(r => r.id === roleObj.id);
+    if (idx !== -1) {
+      this.userModel.roles.splice(idx, 1);
+    } else {
+      this.userModel.roles.push({
+        id: roleObj.id,
+        name: roleObj.name,
+        permissions: roleObj.permissions || [],
+        users: []
+      });
+    }
   }
 
   onSubmit(event: Event, myForm: NgForm) {

@@ -110,6 +110,27 @@
               <!--end::Input-->
             </div>
             <!--end::Input group-->
+
+            <!--begin::Permissions group-->
+            <div class="mb-7">
+              <label class="required fw-semibold fs-6 mb-5">Permissions</label>
+              <div class="row row-cols-1 row-cols-sm-2">
+                <div class="col" *ngFor="let perm of permissions">
+                  <div class="form-check form-check-custom form-check-solid mb-4">
+                    <input class="form-check-input me-3" 
+                           id="kt_modal_role_perm_{{ perm.id }}" 
+                           name="perm_{{ perm.id }}" 
+                           type="checkbox" 
+                           [checked]="isPermissionSelected(perm.id)"
+                           (change)="togglePermission(perm)" />
+                    <label class="form-check-label" for="kt_modal_role_perm_{{ perm.id }}">
+                      <span class="fw-bold text-gray-800">{{ perm.name }}</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!--end::Permissions group-->
           </div>
           <!--end::User form-->
         </div>

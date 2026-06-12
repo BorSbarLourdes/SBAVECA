@@ -6,6 +6,7 @@ import { SwalComponent } from '@sweetalert2/ngx-sweetalert2';
 import { Observable } from 'rxjs';
 import { DataTablesResponse, IRoleModel, RoleService } from 'src/app/_fake/services/role.service';
 import { SweetAlertOptions } from 'sweetalert2';
+import { StateService } from '../../state.service';
 
 @Component({
   selector: 'app-role-listing',
@@ -40,7 +41,13 @@ export class RoleListingComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private clickListener: () => void;
 
-  constructor(private apiService: RoleService, private cdr: ChangeDetectorRef, private renderer: Renderer2, private modalService: NgbModal) { }
+  constructor(
+    private apiService: RoleService,
+    private cdr: ChangeDetectorRef,
+    private renderer: Renderer2,
+    private modalService: NgbModal,
+    private stateService: StateService
+  ) { }
 
   ngAfterViewInit(): void {
     this.clickListener = this.renderer.listen(document, 'click', (event) => {
@@ -63,6 +70,7 @@ export class RoleListingComponent implements OnInit, AfterViewInit, OnDestroy {
             break;
 
           case 'delete':
+            this.delete(id);
             break;
         }
       }
@@ -75,18 +83,44 @@ export class RoleListingComponent implements OnInit, AfterViewInit, OnDestroy {
 
   delete(id: number) {
     this.apiService.deleteRole(id).subscribe(() => {
+      this.roles$ = this.apiService.getRoles();
+      this.cdr.detectChanges();
     });
   }
 
   edit(id: number) {
     this.role$ = this.apiService.getRole(id);
-    this.role$.subscribe((user: IRoleModel) => {
-      this.roleModel = user;
+    this.role$.subscribe((role: IRoleModel) => {
+      this.roleModel = role;
+      if (!this.roleModel.permissions) {
+        this.roleModel.permissions = [];
+      }
     });
   }
 
   create() {
     this.roleModel = { id: 0, name: '', permissions: [], users: [] };
+  }
+
+  get permissions() {
+    return this.stateService.systemPermissions$.value;
+  }
+
+  isPermissionSelected(permId: number): boolean {
+    if (!this.roleModel || !this.roleModel.permissions) return false;
+    return this.roleModel.permissions.some(p => p.id === permId);
+  }
+
+  togglePermission(permObj: any) {
+    if (!this.roleModel.permissions) {
+      this.roleModel.permissions = [];
+    }
+    const idx = this.roleModel.permissions.findIndex(p => p.id === permObj.id);
+    if (idx !== -1) {
+      this.roleModel.permissions.splice(idx, 1);
+    } else {
+      this.roleModel.permissions.push(permObj);
+    }
   }
 
   onSubmit(event: Event, myForm: NgForm) {
