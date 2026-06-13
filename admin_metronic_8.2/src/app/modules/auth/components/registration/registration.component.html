@@ -27,7 +27,7 @@
   <ng-container *ngIf="hasError">
     <div class="mb-lg-15 alert alert-danger">
       <div class="alert-text font-weight-bold">
-        Los datos de registro son incorrectos
+        {{ errorMessage || 'Los datos de registro son incorrectos' }}
       </div>
     </div>
   </ng-container>

@@ -118,3 +118,31 @@ a.link-primary,
 input:focus ~ .custom-help-text {
   display: block;
 }
+
+/* Hide helper text when input is invalid to avoid duplication/overlapping */
+.form-control.is-invalid ~ .custom-help-text {
+  display: none !important;
+}
+
+/* Optimize validation message containers and spacing */
+.fv-plugins-message-container {
+  margin-top: 0.4rem;
+  margin-bottom: 0.4rem;
+
+  .fv-help-block {
+    font-size: 0.85rem !important;
+    line-height: 1.4 !important;
+    font-weight: 500 !important;
+    color: #f1416c !important;
+    display: flex !important;
+    align-items: center;
+    gap: 0.25rem;
+
+    &::before {
+      content: "•";
+      font-size: 1.2rem;
+      color: #f1416c;
+      margin-right: 4px;
+    }
+  }
+}

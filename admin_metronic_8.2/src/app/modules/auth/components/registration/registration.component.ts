@@ -15,6 +15,7 @@ import { first } from 'rxjs/operators';
 export class RegistrationComponent implements OnInit, OnDestroy {
   registrationForm: FormGroup;
   hasError: boolean;
+  errorMessage: string = '';
   isLoading$: Observable<boolean>;
 
   // private fields
@@ -127,6 +128,7 @@ export class RegistrationComponent implements OnInit, OnDestroy {
 
   submit() {
     this.hasError = false;
+    this.errorMessage = '';
     const payload = {
       name: this.f.firstname.value + ' ' + this.f.lastname.value,
       firstname: this.f.firstname.value,
@@ -149,11 +151,18 @@ export class RegistrationComponent implements OnInit, OnDestroy {
     const registrationSubscr = this.authService
       .registration(payload)
       .pipe(first())
-      .subscribe((user: UserModel) => {
-        if (user) {
-          this.router.navigate(['/']);
-        } else {
+      .subscribe({
+        next: (user: UserModel) => {
+          if (user) {
+            this.router.navigate(['/']);
+          } else {
+            this.hasError = true;
+            this.errorMessage = 'Los datos de registro son incorrectos o el inicio de sesión automático falló.';
+          }
+        },
+        error: (err) => {
           this.hasError = true;
+          this.errorMessage = err.error?.message || err.message || 'Error en el servidor al registrar el usuario';
         }
       });
     this.unsubscribe.push(registrationSubscr);

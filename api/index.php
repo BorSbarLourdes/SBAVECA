@@ -165,8 +165,8 @@ if ($route === '/auth/login' && $method === 'POST') {
         send_response(["success" => false, "message" => "Faltan credenciales (email y password)"], 400);
     }
 
-    $stmt = $pdo->prepare("SELECT * FROM usuario WHERE correoUsu = ?");
-    $stmt->execute([$email]);
+    $stmt = $pdo->prepare("SELECT * FROM usuario WHERE correoUsu = ? OR SUBSTRING_INDEX(correoUsu, '@', 1) = ?");
+    $stmt->execute([$email, $email]);
     $user = $stmt->fetch();
 
     if ($user && (password_verify($password, $user['contrasenaUsu']) || $password === $user['contrasenaUsu'])) {
