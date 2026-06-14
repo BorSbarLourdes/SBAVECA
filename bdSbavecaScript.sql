@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS `sbaveca`.`usuario` (
   `nombreUsu`            VARCHAR(50)  NOT NULL,
   `apellidoUsu`          VARCHAR(45)  NOT NULL,
   `correoUsu`            VARCHAR(100) NOT NULL,
+  `usuarioUsu`           VARCHAR(50)  NOT NULL,
   `contrasenaUsu`        VARCHAR(64)  NOT NULL,
   `CUILUsu`              VARCHAR(20)  NOT NULL,
   `telefonoUsu`          VARCHAR(15)  NOT NULL,
@@ -35,6 +36,7 @@ CREATE TABLE IF NOT EXISTS `sbaveca`.`usuario` (
   `expiracionTokenUsu`   DATETIME     NULL DEFAULT NULL,
   PRIMARY KEY (`idUsu`),
   UNIQUE INDEX `uk_usuario_correo` (`correoUsu` ASC),
+  UNIQUE INDEX `uk_usuario_username` (`usuarioUsu` ASC),
   UNIQUE INDEX `uk_usuario_cuil`   (`CUILUsu`   ASC)
 ) ENGINE = InnoDB
   DEFAULT CHARACTER SET = utf8mb4

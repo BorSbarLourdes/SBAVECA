@@ -110,8 +110,20 @@ if ($route === '/auth/register' && $method === 'POST') {
     $address = $input['address'] ?? $input['direccion'] ?? '';
     $dob = $input['dob'] ?? $input['fechaNacimiento'] ?? '';
 
-    if (empty($firstname) || empty($lastname) || empty($email) || empty($password)) {
-        send_response(["success" => false, "message" => "Faltan campos obligatorios (nombre, apellido, email, password)"], 400);
+    if (empty($firstname) || empty($lastname) || empty($email) || empty($password) || empty($dob)) {
+        send_response(["success" => false, "message" => "Faltan campos obligatorios (nombre, apellido, email, password, fecha de nacimiento)"], 400);
+    }
+
+    // Validate age range (between 14 and 105 years old based on current year)
+    $birthDate = strtotime($dob);
+    if (!$birthDate) {
+        send_response(["success" => false, "message" => "Formato de fecha de nacimiento invalido"], 400);
+    }
+    $birthYear = (int)date('Y', $birthDate);
+    $currentYear = (int)date('Y');
+    $age = $currentYear - $birthYear;
+    if ($age < 14 || $age > 105) {
+        send_response(["success" => false, "message" => "No cumple con el limite de edad"], 400);
     }
 
     // Check if email already exists
@@ -119,6 +131,31 @@ if ($route === '/auth/register' && $method === 'POST') {
     $stmt->execute([$email]);
     if ($stmt->fetch()) {
         send_response(["success" => false, "message" => "El correo electronico ya esta registrado"], 400);
+    }
+
+    // Check or generate unique username
+    $username = $input['username'] ?? $input['usuario'] ?? '';
+    if (!empty($username)) {
+        $username = preg_replace('/[^a-zA-Z0-9_\.]/', '', $username);
+        $stmt = $pdo->prepare("SELECT idUsu FROM usuario WHERE usuarioUsu = ?");
+        $stmt->execute([$username]);
+        if ($stmt->fetch()) {
+            send_response(["success" => false, "message" => "El nombre de usuario ya esta registrado"], 400);
+        }
+    } else {
+        $username = explode('@', $email)[0];
+        $username = preg_replace('/[^a-zA-Z0-9_\.]/', '', $username);
+        $baseUsername = $username;
+        $counter = 1;
+        do {
+            $stmt = $pdo->prepare("SELECT idUsu FROM usuario WHERE usuarioUsu = ?");
+            $stmt->execute([$username]);
+            $exists = $stmt->fetch();
+            if ($exists) {
+                $username = $baseUsername . $counter;
+                $counter++;
+            }
+        } while ($exists);
     }
 
     // Generate unique CUIL/DNI matching trigger logic (20 + 8 digits + 9)
@@ -131,8 +168,8 @@ if ($route === '/auth/register' && $method === 'POST') {
         $pdo->beginTransaction();
 
         // Insert into usuario
-        $stmt = $pdo->prepare("INSERT INTO usuario (nombreUsu, apellidoUsu, correoUsu, contrasenaUsu, CUILUsu, telefonoUsu, estadoUsu, rolUsu) VALUES (?, ?, ?, ?, ?, ?, 'Activo', 'Cliente')");
-        $stmt->execute([$firstname, $lastname, $email, $hashedPassword, $cuil, $phone]);
+        $stmt = $pdo->prepare("INSERT INTO usuario (nombreUsu, apellidoUsu, correoUsu, usuarioUsu, contrasenaUsu, CUILUsu, telefonoUsu, estadoUsu, rolUsu) VALUES (?, ?, ?, ?, ?, ?, ?, 'Activo', 'Cliente')");
+        $stmt->execute([$firstname, $lastname, $email, $username, $hashedPassword, $cuil, $phone]);
         $userId = $pdo->lastInsertId();
 
         // Trigger 'sync_usuario_to_persona' will automatically insert the persona.
@@ -145,7 +182,8 @@ if ($route === '/auth/register' && $method === 'POST') {
         send_response([
             "success" => true,
             "message" => "Usuario registrado con exito",
-            "user_id" => $userId
+            "user_id" => $userId,
+            "username" => $username
         ], 201);
 
     } catch (Exception $e) {
@@ -165,8 +203,8 @@ if ($route === '/auth/login' && $method === 'POST') {
         send_response(["success" => false, "message" => "Faltan credenciales (email y password)"], 400);
     }
 
-    $stmt = $pdo->prepare("SELECT * FROM usuario WHERE correoUsu = ? OR SUBSTRING_INDEX(correoUsu, '@', 1) = ?");
-    $stmt->execute([$email, $email]);
+    $stmt = $pdo->prepare("SELECT * FROM usuario WHERE correoUsu = ? OR SUBSTRING_INDEX(correoUsu, '@', 1) = ? OR nombreUsu = ?");
+    $stmt->execute([$email, $email, $email]);
     $user = $stmt->fetch();
 
     if ($user && (password_verify($password, $user['contrasenaUsu']) || $password === $user['contrasenaUsu'])) {
@@ -181,6 +219,99 @@ if ($route === '/auth/login' && $method === 'POST') {
     } else {
         send_response(["success" => false, "message" => "El email y/o la contrasena son incorrectos"], 401);
     }
+}
+
+// Handle POST /auth/google
+if ($route === '/auth/google' && $method === 'POST') {
+    $input = json_decode(file_get_contents('php://input'), true);
+    $accessToken = $input['accessToken'] ?? '';
+
+    if (empty($accessToken)) {
+        send_response(["success" => false, "message" => "Falta el token de acceso de Google"], 400);
+    }
+
+    // Call Google UserInfo API to verify token and get user details
+    $url = "https://www.googleapis.com/oauth2/v3/userinfo?access_token=" . urlencode($accessToken);
+    
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); 
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($httpCode !== 200) {
+        send_response(["success" => false, "message" => "Token de Google invalido o expirado"], 401);
+    }
+
+    $googleUser = json_decode($response, true);
+    $email = $googleUser['email'] ?? '';
+    $firstname = $googleUser['given_name'] ?? $googleUser['name'] ?? 'Google';
+    $lastname = $googleUser['family_name'] ?? 'Usuario';
+    
+    if (empty($email)) {
+        send_response(["success" => false, "message" => "No se pudo obtener el correo electronico de Google"], 400);
+    }
+
+    // Check if email already exists in usuario
+    $stmt = $pdo->prepare("SELECT * FROM usuario WHERE correoUsu = ?");
+    $stmt->execute([$email]);
+    $user = $stmt->fetch();
+
+    if (!$user) {
+        // Generate unique username (usuarioUsu)
+        $baseUsername = strtolower($firstname . substr($lastname, 0, 1));
+        $username = $baseUsername;
+        $counter = 1;
+        do {
+            $stmt = $pdo->prepare("SELECT idUsu FROM usuario WHERE usuarioUsu = ?");
+            $stmt->execute([$username]);
+            $exists = $stmt->fetch();
+            if ($exists) {
+                $username = $baseUsername . $counter;
+                $counter++;
+            }
+        } while ($exists);
+
+        // Generate unique CUIL/DNI (20 + 8 digits + 9)
+        $cuil = '20' . str_pad(mt_rand(10000000, 99999999), 8, '0', STR_PAD_LEFT) . '9';
+        // Set a random password for Google-registered users
+        $randomPassword = bin2hex(random_bytes(16)) . '!1a';
+        $hashedPassword = password_hash($randomPassword, PASSWORD_DEFAULT);
+        $phone = '';
+        $address = '';
+
+        try {
+            $pdo->beginTransaction();
+
+            // Insert into usuario
+            $stmt = $pdo->prepare("INSERT INTO usuario (nombreUsu, apellidoUsu, correoUsu, usuarioUsu, contrasenaUsu, CUILUsu, telefonoUsu, estadoUsu, rolUsu) VALUES (?, ?, ?, ?, ?, ?, ?, 'Activo', 'Cliente')");
+            $stmt->execute([$firstname, $lastname, $email, $username, $hashedPassword, $cuil, $phone]);
+            $userId = $pdo->lastInsertId();
+
+            $pdo->commit();
+
+            // Fetch the newly created user
+            $stmt = $pdo->prepare("SELECT * FROM usuario WHERE idUsu = ?");
+            $stmt->execute([$userId]);
+            $user = $stmt->fetch();
+
+        } catch (Exception $e) {
+            $pdo->rollBack();
+            send_response(["success" => false, "message" => "Error al registrar usuario de Google: " . $e->getMessage()], 500);
+        }
+    }
+
+    // Generate JWT token for the user
+    $token = generate_token($user['idUsu']);
+    
+    send_response([
+        "authToken" => $token,
+        "refreshToken" => $token,
+        "expiresIn" => date('c', time() + 3600 * 24)
+    ]);
 }
 
 // Handle GET /auth/me
@@ -205,7 +336,7 @@ if ($route === '/auth/me' && $method === 'GET') {
 
                 send_response([
                     "id" => (int)$user['idUsu'],
-                    "username" => explode('@', $user['correoUsu'])[0],
+                    "username" => $user['usuarioUsu'] ?? explode('@', $user['correoUsu'])[0],
                     "fullname" => $user['nombreUsu'] . ' ' . $user['apellidoUsu'],
                     "email" => $user['correoUsu'],
                     "phone" => $user['telefonoUsu'],

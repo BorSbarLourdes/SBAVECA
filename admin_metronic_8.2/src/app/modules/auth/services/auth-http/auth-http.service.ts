@@ -21,6 +21,12 @@ export class AuthHTTPService {
     });
   }
 
+  loginWithGoogle(accessToken: string): Observable<any> {
+    return this.http.post<AuthModel>(`${API_USERS_URL}/google`, {
+      accessToken,
+    });
+  }
+
   // CREATE =>  POST: add a new user to the server
   createUser(payload: any): Observable<UserModel> {
     return this.http.post<UserModel>(`${API_USERS_URL}/register`, payload);

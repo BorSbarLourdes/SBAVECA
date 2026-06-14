@@ -1,11 +1,14 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { FormGroup, FormBuilder, Validators } from '@angular/forms';
+import { FormGroup, FormBuilder, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Subscription, Observable } from 'rxjs';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { ConfirmPasswordValidator } from './confirm-password.validator';
 import { UserModel } from '../../models/user.model';
 import { first } from 'rxjs/operators';
+import { environment } from '../../../../../environments/environment';
+
+declare var google: any;
 
 @Component({
   selector: 'app-registration',
@@ -20,6 +23,23 @@ export class RegistrationComponent implements OnInit, OnDestroy {
 
   // private fields
   private unsubscribe: Subscription[] = []; // Read more: => https://brianflove.com/2016/12/11/anguar-2-unsubscribe-observables/
+
+  static ageValidator(control: AbstractControl): ValidationErrors | null {
+    if (!control.value) {
+      return null;
+    }
+    const dob = new Date(control.value);
+    if (isNaN(dob.getTime())) {
+      return { invalidDate: true };
+    }
+    const birthYear = dob.getFullYear();
+    const currentYear = new Date().getFullYear();
+    const age = currentYear - birthYear;
+    if (age < 14 || age > 105) {
+      return { ageRange: true };
+    }
+    return null;
+  }
 
   constructor(
     private fb: FormBuilder,
@@ -65,6 +85,7 @@ export class RegistrationComponent implements OnInit, OnDestroy {
           '',
           Validators.compose([
             Validators.required,
+            RegistrationComponent.ageValidator
           ]),
         ],
         phone: [
@@ -86,7 +107,6 @@ export class RegistrationComponent implements OnInit, OnDestroy {
         username: [
           '',
           Validators.compose([
-            Validators.required,
             Validators.minLength(3),
             Validators.maxLength(50),
           ]),
@@ -166,6 +186,40 @@ export class RegistrationComponent implements OnInit, OnDestroy {
         }
       });
     this.unsubscribe.push(registrationSubscr);
+  }
+
+  loginWithGoogle(event: Event) {
+    event.preventDefault();
+    this.hasError = false;
+
+    if (typeof google === 'undefined') {
+      alert('El SDK de Google no se ha cargado correctamente. Por favor intenta de nuevo.');
+      return;
+    }
+
+    const client = google.accounts.oauth2.initTokenClient({
+      client_id: environment.googleClientId,
+      scope: 'email profile openid',
+      callback: (response: any) => {
+        if (response.access_token) {
+          const googleLoginSub = this.authService.loginWithGoogle(response.access_token)
+            .pipe(first())
+            .subscribe((user) => {
+              if (user) {
+                this.router.navigate(['/']);
+              } else {
+                this.hasError = true;
+                this.errorMessage = 'No se pudo iniciar sesión con Google. Por favor intenta de nuevo.';
+              }
+            });
+          this.unsubscribe.push(googleLoginSub);
+        } else {
+          this.hasError = true;
+          this.errorMessage = 'Acceso cancelado o fallido con Google.';
+        }
+      },
+    });
+    client.requestAccessToken();
   }
 
   ngOnDestroy() {

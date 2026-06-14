@@ -124,6 +124,73 @@ export class AuthService implements OnDestroy {
     }
   }
 
+  loginWithGoogle(accessToken: string): Observable<UserType> {
+    this.isLoadingSubject.next(true);
+
+    if (environment.isMockEnabled) {
+      const users = this.stateService.systemUsers$.value;
+      let foundUser = users.find((u: any) => u.email.toLowerCase() === 'google@demo.com');
+
+      if (!foundUser) {
+        foundUser = {
+          id: users.length > 0 ? Math.max(...users.map((u: any) => u.id)) + 1 : 1,
+          name: 'Google User',
+          username: 'googleuser',
+          email: 'google@demo.com',
+          password: 'Password123!',
+          roleIds: [3],
+          created_at: new Date().toISOString()
+        };
+        this.stateService.saveSystemUser(foundUser);
+      }
+
+      const auth = new AuthModel();
+      auth.authToken = `local-auth-token-${foundUser.id}`;
+      auth.refreshToken = `local-auth-token-${foundUser.id}`;
+      auth.expiresIn = new Date(Date.now() + 100 * 24 * 60 * 60 * 1000);
+
+      this.setAuthFromLocalStorage(auth);
+
+      const roles = this.stateService.systemRoles$.value;
+      const userRoles = roles.filter((r: any) => foundUser.roleIds.includes(r.id));
+
+      const userModel = new UserModel();
+      userModel.id = foundUser.id;
+      userModel.username = foundUser.username;
+      userModel.fullname = foundUser.name;
+      userModel.email = foundUser.email;
+      userModel.roles = foundUser.roleIds;
+      userModel.role = userRoles.map((r: any) => r.name).join(', ');
+      userModel.pic = './assets/media/avatars/300-20.jpg';
+
+      this.currentUserSubject.next(userModel);
+      this.resetInactivity();
+      this.isLoadingSubject.next(false);
+      return of(userModel);
+    } else {
+      return this.authHttpService.loginWithGoogle(accessToken).pipe(
+        map((auth: any) => {
+          if (auth && auth.authToken) {
+            this.setAuthFromLocalStorage(auth);
+            return auth;
+          }
+          return undefined;
+        }),
+        switchMap((auth) => {
+          if (auth) {
+            return this.getUserByToken();
+          }
+          return of(undefined);
+        }),
+        catchError((err) => {
+          console.error('google login err', err);
+          return of(undefined);
+        }),
+        finalize(() => this.isLoadingSubject.next(false))
+      );
+    }
+  }
+
   logout() {
     this.stopInactivityTimer();
     localStorage.removeItem(this.authLocalStorageToken);

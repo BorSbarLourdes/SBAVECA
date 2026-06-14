@@ -91,6 +91,11 @@
           message: 'Se requiere fecha de nacimiento',
           control: registrationForm.controls['dob']
         }"></ng-container>
+      <ng-container [ngTemplateOutlet]="formError" [ngTemplateOutletContext]="{
+          validation: 'ageRange',
+          message: 'No cumple con el limite de edad',
+          control: registrationForm.controls['dob']
+        }"></ng-container>
     </div>
     <div class="col-md-6 fv-row">
       <label class="form-label fw-bolder text-gray-900 fs-6">Teléfono</label>
@@ -136,18 +141,13 @@
         }"></ng-container>
     </div>
     <div class="col-md-6 fv-row">
-      <label class="form-label fw-bolder text-gray-900 fs-6">Usuario</label>
+      <label class="form-label fw-bolder text-gray-900 fs-6">Usuario <span class="text-muted fs-7 fw-normal">(Opcional)</span></label>
       <input class="form-control bg-transparent" type="text" name="username" formControlName="username"
         placeholder="Usuario" autocomplete="off" [ngClass]="{
-          'is-invalid': registrationForm.controls['username'].invalid,
-          'is-valid': registrationForm.controls['username'].valid
+          'is-invalid': registrationForm.controls['username'].invalid && (registrationForm.controls['username'].dirty || registrationForm.controls['username'].touched),
+          'is-valid': registrationForm.controls['username'].valid && registrationForm.controls['username'].value && (registrationForm.controls['username'].dirty || registrationForm.controls['username'].touched)
         }" />
       <div class="form-text text-muted custom-help-text">Mínimo 3 y máximo 50 caracteres (letras/números).</div>
-      <ng-container [ngTemplateOutlet]="formError" [ngTemplateOutletContext]="{
-          validation: 'required',
-          message: 'Se requiere usuario',
-          control: registrationForm.controls['username']
-        }"></ng-container>
       <ng-container [ngTemplateOutlet]="formError" [ngTemplateOutletContext]="{
           validation: 'minlength',
           message: 'El usuario debe tener al menos 3 caracteres',
@@ -271,7 +271,7 @@
 
   <!--begin::Google link--->
   <div class="d-grid mb-5">
-    <a href="#"
+    <a href="#" (click)="loginWithGoogle($event)"
       class="btn btn-flex btn-outline btn-text-gray-700 btn-active-color-primary bg-state-light flex-center text-nowrap w-100">
       <img alt="Logo" src="./assets/media/svg/brand-logos/google-icon.svg" class="h-15px me-3" />
       Iniciar sesión con Google

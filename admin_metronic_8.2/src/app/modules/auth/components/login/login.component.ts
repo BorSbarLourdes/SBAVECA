@@ -5,6 +5,9 @@ import { first } from 'rxjs/operators';
 import { UserModel } from '../../models/user.model';
 import { AuthService } from '../../services/auth.service';
 import { ActivatedRoute, Router } from '@angular/router';
+import { environment } from '../../../../../environments/environment';
+
+declare var google: any;
 
 @Component({
   selector: 'app-login',
@@ -103,6 +106,38 @@ export class LoginComponent implements OnInit, OnDestroy {
         }
       });
     this.unsubscribe.push(loginSubscr);
+  }
+
+  loginWithGoogle(event: Event) {
+    event.preventDefault();
+    this.hasError = false;
+
+    if (typeof google === 'undefined') {
+      alert('El SDK de Google no se ha cargado correctamente. Por favor intenta de nuevo.');
+      return;
+    }
+
+    const client = google.accounts.oauth2.initTokenClient({
+      client_id: environment.googleClientId,
+      scope: 'email profile openid',
+      callback: (response: any) => {
+        if (response.access_token) {
+          const googleLoginSub = this.authService.loginWithGoogle(response.access_token)
+            .pipe(first())
+            .subscribe((user) => {
+              if (user) {
+                this.router.navigate([this.returnUrl]);
+              } else {
+                this.hasError = true;
+              }
+            });
+          this.unsubscribe.push(googleLoginSub);
+        } else {
+          this.hasError = true;
+        }
+      },
+    });
+    client.requestAccessToken();
   }
 
   ngOnDestroy() {
