@@ -83,6 +83,16 @@
       </a>
     </div>
 
+    <!-- Historial de Ventas -->
+    <div class="menu-item" *ngIf="hasPermission(8)">
+      <a class="menu-link without-sub" routerLink="/historial-ventas" routerLinkActive="active">
+        <span class="menu-icon">
+          <app-keenicon name="bill" class="fs-2"></app-keenicon>
+        </span>
+        <span class="menu-title">Historial de Ventas</span>
+      </a>
+    </div>
+
     <!-- Gestión de Clientes -->
     <div class="menu-item" *ngIf="hasPermission(6)">
       <a class="menu-link without-sub" routerLink="/clientes" routerLinkActive="active">

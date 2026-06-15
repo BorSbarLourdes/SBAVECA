@@ -54,8 +54,11 @@ export class StockComponent implements OnInit, OnDestroy {
   }
 
   getSupplierName(supplierId: number): string {
+    if (!supplierId || supplierId <= 0) {
+      return 'Ninguno';
+    }
     const sup = this.suppliers.find((s) => s.id === +supplierId);
-    return sup ? sup.name : 'Desconocido';
+    return sup ? sup.name : 'Ninguno';
   }
 
   // Stock items CRUD
@@ -67,7 +70,7 @@ export class StockComponent implements OnInit, OnDestroy {
     this.itemUnit = '';
     this.itemMinThreshold = 0;
     this.itemCostPrice = 0;
-    this.itemSupplierId = this.suppliers.length > 0 ? this.suppliers[0].id : 0;
+    this.itemSupplierId = 0;
     this.itemImage = '';
     this.isItemModalOpen = true;
   }
@@ -80,7 +83,7 @@ export class StockComponent implements OnInit, OnDestroy {
     this.itemUnit = item.unit;
     this.itemMinThreshold = item.minThreshold;
     this.itemCostPrice = item.costPrice;
-    this.itemSupplierId = item.supplierId;
+    this.itemSupplierId = item.supplierId || 0;
     this.itemImage = item.image || '';
     this.isItemModalOpen = true;
   }

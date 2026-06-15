@@ -67,6 +67,10 @@ const Routing: Routes = [
     loadChildren: () => import('./ventas/ventas.module').then((m) => m.VentasModule),
   },
   {
+    path: 'historial-ventas',
+    loadChildren: () => import('./historial-ventas/historial-ventas.module').then((m) => m.HistorialVentasModule),
+  },
+  {
     path: 'recetario-costes',
     loadChildren: () => import('./recetario-costes/recetario-costes.module').then((m) => m.RecetarioCostesModule),
   },

@@ -513,11 +513,7 @@ if ($route === '/insumos') {
             send_response(["success" => false, "message" => "El nombre es obligatorio"], 400);
         }
         
-        if ($supplierId <= 0) {
-            $stmt = $pdo->query("SELECT idPro FROM proveedor LIMIT 1");
-            $defaultSup = $stmt->fetch();
-            $supplierId = $defaultSup ? (int)$defaultSup['idPro'] : 1;
-        }
+        $dbSupplierId = ($supplierId > 0) ? $supplierId : null;
         
         $mysqlCategory = 'Ingrediente';
         if ($category === 'producto') {
@@ -533,7 +529,7 @@ if ($route === '/insumos') {
             
             if ($id > 0) {
                 $stmt = $pdo->prepare("UPDATE insumo SET nombreIns = ?, categoriaIns = ?, unidadMedidaIns = ?, precioCompraIns = ?, stockMinimoIns = ?, imagenBlobIns = ?, proveedorIdPro = ? WHERE idIns = ?");
-                $stmt->execute([$name, $mysqlCategory, $unit, $costPrice, $minThreshold, $imagePath, $supplierId, $id]);
+                $stmt->execute([$name, $mysqlCategory, $unit, $costPrice, $minThreshold, $imagePath, $dbSupplierId, $id]);
                 
                 $stmtCheck = $pdo->prepare("SELECT idInv FROM inventario WHERE insumoIdInv = ?");
                 $stmtCheck->execute([$id]);
@@ -546,7 +542,7 @@ if ($route === '/insumos') {
                 }
             } else {
                 $stmt = $pdo->prepare("INSERT INTO insumo (nombreIns, categoriaIns, unidadMedidaIns, precioCompraIns, stockMinimoIns, imagenBlobIns, proveedorIdPro, estadoIns) VALUES (?, ?, ?, ?, ?, ?, ?, 'Activo')");
-                $stmt->execute([$name, $mysqlCategory, $unit, $costPrice, $minThreshold, $imagePath, $supplierId]);
+                $stmt->execute([$name, $mysqlCategory, $unit, $costPrice, $minThreshold, $imagePath, $dbSupplierId]);
                 $id = $pdo->lastInsertId();
                 
                 $stmtInv = $pdo->prepare("INSERT INTO inventario (insumoIdInv, stockActualInv, stockMinimoInv, unidadMedidaInv) VALUES (?, ?, ?, ?)");
@@ -821,7 +817,7 @@ $countPerms = $pdo->query("SELECT COUNT(*) FROM dashboard_permisos")->fetchColum
 if ((int)$countPerms === 0) {
     $defaultPerms = [
         'Acceder al Dashboard', 'Gestionar Stock', 'Gestionar Recetas',
-        'Gestionar Pedidos', 'Gestionar Ventas', 'Gestionar Clientes', 'Gestionar Roles'
+        'Gestionar Pedidos', 'Gestionar Ventas', 'Gestionar Clientes', 'Gestionar Roles', 'Ver Historial de Ventas'
     ];
     $stmtP = $pdo->prepare("INSERT IGNORE INTO dashboard_permisos (nombreDashPer) VALUES (?)");
     foreach ($defaultPerms as $pname) {
@@ -839,7 +835,7 @@ if ((int)$countRoles === 0) {
     $defaultRoles = [
         'Administrador' => array_values($permByName),
         'Empleado'      => array_filter(array_map(fn($n) => $permByName[$n] ?? null,
-                            ['Acceder al Dashboard','Gestionar Stock','Gestionar Pedidos','Gestionar Ventas','Gestionar Clientes'])),
+                            ['Acceder al Dashboard','Gestionar Stock','Gestionar Pedidos','Gestionar Ventas','Gestionar Clientes','Ver Historial de Ventas'])),
         'Cliente'       => array_filter(array_map(fn($n) => $permByName[$n] ?? null,
                             ['Acceder al Dashboard','Gestionar Pedidos'])),
     ];
@@ -855,6 +851,35 @@ if ((int)$countRoles === 0) {
             }
         }
     }
+}
+
+// Dynamic migration block: Check and insert 'Ver Historial de Ventas' if not exists, and assign to roles
+try {
+    $hasHistorial = $pdo->query("SELECT idDashPer FROM dashboard_permisos WHERE nombreDashPer = 'Ver Historial de Ventas'")->fetchColumn();
+    if (!$hasHistorial) {
+        $pdo->exec("INSERT INTO dashboard_permisos (nombreDashPer) VALUES ('Ver Historial de Ventas')");
+        $hasHistorial = $pdo->lastInsertId();
+    }
+    if ($hasHistorial) {
+        // Admin role (id 1)
+        $adminRoleExists = $pdo->query("SELECT COUNT(*) FROM roles WHERE idRol = 1")->fetchColumn();
+        if ($adminRoleExists) {
+            $hasRel = $pdo->query("SELECT COUNT(*) FROM rol_permiso WHERE idRol = 1 AND idDashPer = $hasHistorial")->fetchColumn();
+            if (!$hasRel) {
+                $pdo->exec("INSERT IGNORE INTO rol_permiso (idRol, idDashPer) VALUES (1, $hasHistorial)");
+            }
+        }
+        // Empleado role (id 2)
+        $empleadoRoleExists = $pdo->query("SELECT COUNT(*) FROM roles WHERE idRol = 2")->fetchColumn();
+        if ($empleadoRoleExists) {
+            $hasRel = $pdo->query("SELECT COUNT(*) FROM rol_permiso WHERE idRol = 2 AND idDashPer = $hasHistorial")->fetchColumn();
+            if (!$hasRel) {
+                $pdo->exec("INSERT IGNORE INTO rol_permiso (idRol, idDashPer) VALUES (2, $hasHistorial)");
+            }
+        }
+    }
+} catch (Exception $e) {
+    // Suppress DB errors here during request lifecycle
 }
 
 // =============================================================

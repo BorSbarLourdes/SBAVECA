@@ -208,6 +208,7 @@
           <div class="col-12 col-md-6">
             <label class="form-label">Proveedor Vinculado</label>
             <select class="form-select" [(ngModel)]="itemSupplierId">
+              <option [value]="0">Ninguno</option>
               <option *ngFor="let s of suppliers" [value]="s.id">{{ s.name }}</option>
             </select>
           </div>
