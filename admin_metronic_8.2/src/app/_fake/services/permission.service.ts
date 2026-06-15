@@ -1,6 +1,9 @@
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { Observable } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
 import { StateService } from '../../pages/state.service';
+import { map, tap } from 'rxjs/operators';
 
 export interface DataTablesResponse {
   draw?: number;
@@ -21,45 +24,71 @@ export interface IPermissionModel {
 })
 export class PermissionService {
 
-  constructor(private stateService: StateService) { }
+  constructor(
+    private http: HttpClient,
+    private stateService: StateService
+  ) { }
 
   getPermissions(dataTablesParameters: any): Observable<DataTablesResponse> {
-    const searchVal = dataTablesParameters?.search?.value?.toLowerCase() || '';
-    let filtered = [...this.stateService.systemPermissions$.value];
-    if (searchVal) {
-      filtered = filtered.filter(p => p.name.toLowerCase().includes(searchVal));
-    }
-    const response: DataTablesResponse = {
-      draw: dataTablesParameters?.draw || 1,
-      recordsTotal: this.stateService.systemPermissions$.value.length,
-      recordsFiltered: filtered.length,
-      data: filtered.slice(dataTablesParameters?.start || 0, (dataTablesParameters?.start || 0) + (dataTablesParameters?.length || 10))
-    };
-    return of(response);
+    const start = dataTablesParameters?.start || 0;
+    const length = dataTablesParameters?.length || 10;
+    const draw = dataTablesParameters?.draw || 1;
+    const search = dataTablesParameters?.search?.value || '';
+
+    return this.http.get<DataTablesResponse>(`${environment.apiUrl}/permisos`, {
+      params: {
+        start: start.toString(),
+        length: length.toString(),
+        draw: draw.toString(),
+        search: search
+      }
+    });
   }
 
   getPermission(id: number): Observable<IPermissionModel> {
-    const list = this.stateService.systemPermissions$.value;
-    const found = list.find(p => p.id === +id);
-    return of(found || { id: 0, name: '' });
+    return this.http.get<IPermissionModel>(`${environment.apiUrl}/permisos`, {
+      params: { id: id.toString() }
+    });
   }
 
   createPermission(permission: IPermissionModel): Observable<IPermissionModel> {
-    this.stateService.saveSystemPermission(permission);
-    // Find the saved permission to return with its assigned ID
-    const list = this.stateService.systemPermissions$.value;
-    const found = list[list.length - 1];
-    return of(found);
+    return this.http.post<any>(`${environment.apiUrl}/permisos`, permission).pipe(
+      tap((res) => {
+        if (res.success) {
+          this.stateService.loadPermissions();
+        }
+      }),
+      map((res) => {
+        return {
+          id: res.id || permission.id,
+          name: permission.name
+        };
+      })
+    );
   }
 
   updatePermission(id: number, permission: IPermissionModel): Observable<IPermissionModel> {
-    permission.id = +id;
-    this.stateService.saveSystemPermission(permission);
-    return of(permission);
+    const body = { ...permission, id: +id };
+    return this.http.post<any>(`${environment.apiUrl}/permisos`, body).pipe(
+      tap((res) => {
+        if (res.success) {
+          this.stateService.loadPermissions();
+        }
+      }),
+      map(() => body)
+    );
   }
 
   deletePermission(id: number): Observable<void> {
-    this.stateService.deleteSystemPermission(+id);
-    return of(undefined);
+    return this.http.delete<any>(`${environment.apiUrl}/permisos`, {
+      params: { id: id.toString() }
+    }).pipe(
+      tap((res) => {
+        if (res.success) {
+          this.stateService.loadPermissions();
+        }
+      }),
+      map(() => undefined)
+    );
   }
 }

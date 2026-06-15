@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { DataTablesResponse, IUserModel, UserService } from 'src/app/_fake/services/user-service';
 import { SweetAlertOptions } from 'sweetalert2';
 import moment from 'moment';
+import 'moment/locale/es';
 import { IRoleModel, RoleService } from 'src/app/_fake/services/role.service';
 
 @Component({
@@ -52,7 +53,7 @@ export class UserListingComponent implements OnInit, AfterViewInit, OnDestroy {
       },
       columns: [
         {
-          title: 'Name', data: 'name', render: function (data, type, full) {
+          title: 'Nombre', data: 'name', render: function (data, type, full) {
             const colorClasses = ['success', 'info', 'warning', 'danger'];
             const randomColorClass = colorClasses[Math.floor(Math.random() * colorClasses.length)];
 
@@ -81,7 +82,7 @@ export class UserListingComponent implements OnInit, AfterViewInit, OnDestroy {
           }
         },
         {
-          title: 'Role', data: 'role', render: function (data, type, row) {
+          title: 'Rol', data: 'role', render: function (data, type, row) {
             if (row.roles && row.roles.length > 0) {
               return row.roles.map((r: any) => r.name).join(', ');
             }
@@ -92,14 +93,14 @@ export class UserListingComponent implements OnInit, AfterViewInit, OnDestroy {
           type: 'string',
         },
         {
-          title: 'Last Login', data: 'last_login_at', render: (data, type, full) => {
+          title: 'Último Acceso', data: 'last_login_at', render: (data, type, full) => {
             const date = data || full.created_at;
-            const dateString = moment(date).fromNow();
+            const dateString = moment(date).locale('es').fromNow();
             return `<div class="badge badge-light fw-bold">${dateString}</div>`;
           }
         },
         {
-          title: 'Joined Date', data: 'created_at', render: function (data) {
+          title: 'Fecha de Registro', data: 'created_at', render: function (data) {
             return moment(data).format('DD MMM YYYY, hh:mm a');;
           }
         }
@@ -163,12 +164,12 @@ export class UserListingComponent implements OnInit, AfterViewInit, OnDestroy {
 
     const successAlert: SweetAlertOptions = {
       icon: 'success',
-      title: 'Success!',
-      text: this.userModel.id > 0 ? 'User updated successfully!' : 'User created successfully!',
+      title: '¡Éxito!',
+      text: this.userModel.id > 0 ? '¡Usuario actualizado correctamente!' : '¡Usuario creado correctamente!',
     };
     const errorAlert: SweetAlertOptions = {
       icon: 'error',
-      title: 'Error!',
+      title: '¡Error!',
       text: '',
     };
 
@@ -243,7 +244,7 @@ export class UserListingComponent implements OnInit, AfterViewInit, OnDestroy {
     }
     this.swalOptions = Object.assign({
       buttonsStyling: false,
-      confirmButtonText: "Ok, got it!",
+      confirmButtonText: "Aceptar",
       customClass: {
         confirmButton: "btn btn-" + style
       }

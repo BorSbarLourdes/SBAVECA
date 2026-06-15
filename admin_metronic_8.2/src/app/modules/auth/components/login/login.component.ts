@@ -23,6 +23,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   };
   loginForm: FormGroup;
   hasError: boolean;
+  errorType: string = 'invalid_credentials'; // 'invalid_credentials' | 'no_permission'
   returnUrl: string;
   isLoading$: Observable<boolean>;
 
@@ -88,21 +89,29 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   submit() {
     this.hasError = false;
+    this.errorType = 'invalid_credentials';
     const loginSubscr = this.authService
       .login(this.f.username.value, this.f.password.value)
       .pipe(first())
-      .subscribe((user: UserModel | undefined) => {
-        if (user) {
-          if (this.f.rememberMe.value) {
-            localStorage.setItem('sbaveca_remembered_username', this.f.username.value);
+      .subscribe({
+        next: (user: UserModel | undefined) => {
+          if (user) {
+            if (this.f.rememberMe.value) {
+              localStorage.setItem('sbaveca_remembered_username', this.f.username.value);
+            } else {
+              localStorage.removeItem('sbaveca_remembered_username');
+            }
+            this.authService.resetInactivity();
+            this.router.navigate([this.returnUrl]);
           } else {
-            localStorage.removeItem('sbaveca_remembered_username');
+            this.hasError = true;
           }
-          // Reset inactivity
-          this.authService.resetInactivity();
-          this.router.navigate([this.returnUrl]);
-        } else {
+        },
+        error: (err: any) => {
           this.hasError = true;
+          if (err?.status === 403 || err?.error?.error_type === 'no_permission') {
+            this.errorType = 'no_permission';
+          }
         }
       });
     this.unsubscribe.push(loginSubscr);
@@ -111,6 +120,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   loginWithGoogle(event: Event) {
     event.preventDefault();
     this.hasError = false;
+    this.errorType = 'invalid_credentials';
 
     if (typeof google === 'undefined') {
       alert('El SDK de Google no se ha cargado correctamente. Por favor intenta de nuevo.');
@@ -124,11 +134,19 @@ export class LoginComponent implements OnInit, OnDestroy {
         if (response.access_token) {
           const googleLoginSub = this.authService.loginWithGoogle(response.access_token)
             .pipe(first())
-            .subscribe((user) => {
-              if (user) {
-                this.router.navigate([this.returnUrl]);
-              } else {
+            .subscribe({
+              next: (user) => {
+                if (user) {
+                  this.router.navigate([this.returnUrl]);
+                } else {
+                  this.hasError = true;
+                }
+              },
+              error: (err: any) => {
                 this.hasError = true;
+                if (err?.status === 403 || err?.error?.error_type === 'no_permission') {
+                  this.errorType = 'no_permission';
+                }
               }
             });
           this.unsubscribe.push(googleLoginSub);

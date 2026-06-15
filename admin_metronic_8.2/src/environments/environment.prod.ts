@@ -157,6 +157,9 @@ export const environment = {
       'thumbnail': './assets/media/demos/demo20.png'
     },
   },
+  URL_BACKEND: 'http://localhost/SBAVECA/',
+  URL_SERVICIOS: 'http://localhost/SBAVECA/api',
+  URL_FRONTEND: ' http://localhost:5000/'
 };
 
 /*

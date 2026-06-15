@@ -133,6 +133,50 @@ export class StateService {
     this.loadInitialData();
   }
 
+  public loadPermissions() {
+    this.http.get<any>(`${this.API_URL}/permisos?start=0&length=1000`).subscribe({
+      next: (res) => {
+        const list = res?.data || [];
+        this.systemPermissions$.next(list);
+      },
+      error: (e) => console.error('Error loading permissions:', e)
+    });
+  }
+
+  public loadRoles() {
+    this.http.get<any>(`${this.API_URL}/roles`).subscribe({
+      next: (res) => {
+        const list = res?.data || [];
+        const mappedRoles = list.map((r: any) => ({
+          id: r.id,
+          name: r.name,
+          permissionIds: r.permissions ? r.permissions.map((p: any) => p.id) : []
+        }));
+        this.systemRoles$.next(mappedRoles);
+      },
+      error: (e) => console.error('Error loading roles:', e)
+    });
+  }
+
+  public loadUsers() {
+    this.http.get<any>(`${this.API_URL}/usuarios?start=0&length=1000`).subscribe({
+      next: (res) => {
+        const list = res?.data || [];
+        const mappedUsers = list.map((u: any) => ({
+          id: u.id,
+          name: u.name,
+          username: u.email ? u.email.split('@')[0] : '',
+          email: u.email,
+          roleIds: u.roles ? u.roles.map((r: any) => r.id) : [],
+          status: u.status,
+          phone: u.phone
+        }));
+        this.systemUsers$.next(mappedUsers);
+      },
+      error: (e) => console.error('Error loading users:', e)
+    });
+  }
+
   private loadInitialData() {
     // 1. Fetch stock items from database
     this.http.get<StockItem[]>(`${this.API_URL}/insumos`).subscribe({
@@ -166,6 +210,11 @@ export class StateService {
       error: (e) => console.error('Error loading recipes:', e)
     });
 
+    // 4. Fetch users, roles, permissions from database
+    this.loadPermissions();
+    this.loadRoles();
+    this.loadUsers();
+
     const dataStr = localStorage.getItem(this.STORAGE_KEY);
     if (dataStr) {
       try {
@@ -178,9 +227,6 @@ export class StateService {
         this.menu$.next(parsed.menu || {
           lunes: [], martes: [], miercoles: [], jueves: [], viernes: [], sabado: [], domingo: []
         });
-        this.systemUsers$.next(parsed.systemUsers || []);
-        this.systemRoles$.next(parsed.systemRoles || []);
-        this.systemPermissions$.next(parsed.systemPermissions || []);
         return;
       } catch (e) {
         console.error('Error parsing stored data, resetting...', e);
@@ -225,37 +271,12 @@ export class StateService {
       }
     ];
 
-    const defaultPermissions = [
-      { id: 1, name: 'Access Dashboard' },
-      { id: 2, name: 'Manage Stock' },
-      { id: 3, name: 'Manage Recipes' },
-      { id: 4, name: 'Manage Orders' },
-      { id: 5, name: 'Manage Sales' },
-      { id: 6, name: 'Manage Clients' },
-      { id: 7, name: 'Manage Roles' }
-    ];
-
-    const defaultRoles = [
-      { id: 1, name: 'administrator', permissionIds: [1, 2, 3, 4, 5, 6, 7] },
-      { id: 2, name: 'empleado', permissionIds: [1, 2, 4, 5, 6] },
-      { id: 3, name: 'cliente', permissionIds: [1, 4] }
-    ];
-
-    const defaultUsers = [
-      { id: 1, name: 'Sean Stark', username: 'administrator', email: 'admin@demo.com', password: 'Password123!', roleIds: [1], last_login_at: '2026-06-12T00:00:00Z', created_at: '2026-06-11T12:00:00Z' },
-      { id: 2, name: 'Megan Fox', username: 'empleado1', email: 'user@demo.com', password: 'Password123!', roleIds: [2], last_login_at: '2026-06-12T00:00:00Z', created_at: '2026-06-11T12:00:00Z' },
-      { id: 3, name: 'Manu Ginobili', username: 'cliente1', email: 'guest@demo.com', password: 'Password123!', roleIds: [3], last_login_at: '2026-06-12T00:00:00Z', created_at: '2026-06-11T12:00:00Z' }
-    ];
-
     this.employees$.next(defaultEmployees);
     this.clients$.next(defaultClients);
     this.orders$.next(defaultOrders);
     this.transactions$.next(defaultTransactions);
     this.receipts$.next(defaultReceipts);
     this.menu$.next(defaultMenu);
-    this.systemUsers$.next(defaultUsers);
-    this.systemRoles$.next(defaultRoles);
-    this.systemPermissions$.next(defaultPermissions);
 
     this.saveToStorage();
   }
@@ -268,10 +289,7 @@ export class StateService {
         orders: this.orders$.value,
         transactions: this.transactions$.value,
         receipts: this.receipts$.value,
-        menu: this.menu$.value,
-        systemUsers: this.systemUsers$.value,
-        systemRoles: this.systemRoles$.value,
-        systemPermissions: this.systemPermissions$.value,
+        menu: this.menu$.value
       };
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data));
     } catch (e) {

@@ -49,11 +49,11 @@ export class PermissionListingComponent implements OnInit, AfterViewInit, OnDest
       },
       columns: [
         {
-          title: 'Name', data: 'name',
+          title: 'Nombre', data: 'name',
           render: (data: any, type: any, full: IPermissionModel) => `<a href="javascript:;" data-action="view" data-id="${full.id}" class="text-gray-800 text-hover-primary mb-1">${data}</a>`
         },
         {
-          title: 'Assigned To', data: null, render: function (data, type, row) {
+          title: 'Asignado a', data: null, render: function (data, type, row) {
             if (Array.isArray(data.roles)) {
               return data.roles.map(function (role: any) {
                 const color = ['info', 'success', 'warning', 'danger', 'primary'][Math.floor(Math.random() * 5)];
@@ -68,7 +68,7 @@ export class PermissionListingComponent implements OnInit, AfterViewInit, OnDest
           type: 'string',
         },
         {
-          title: 'Created Date', data: 'created_at', render: function (data) {
+          title: 'Fecha de Creación', data: 'created_at', render: function (data) {
             return moment(data).format('DD MMM YYYY, hh:mm a');;
           }
         }
@@ -102,12 +102,12 @@ export class PermissionListingComponent implements OnInit, AfterViewInit, OnDest
 
     const successAlert: SweetAlertOptions = {
       icon: 'success',
-      title: 'Success!',
-      text: this.permissionModel.id > 0 ? 'Permission updated successfully!' : 'Permission created successfully!',
+      title: '¡Éxito!',
+      text: this.permissionModel.id > 0 ? '¡Permiso actualizado correctamente!' : '¡Permiso creado correctamente!',
     };
     const errorAlert: SweetAlertOptions = {
       icon: 'error',
-      title: 'Error!',
+      title: '¡Error!',
       text: '',
     };
 
@@ -181,7 +181,7 @@ export class PermissionListingComponent implements OnInit, AfterViewInit, OnDest
     }
     this.swalOptions = Object.assign({
       buttonsStyling: false,
-      confirmButtonText: "Ok, got it!",
+      confirmButtonText: "Aceptar",
       customClass: {
         confirmButton: "btn btn-" + style
       }

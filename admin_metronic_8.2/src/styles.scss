@@ -581,6 +581,30 @@ input:focus ~ .custom-help-text {
   }
 }
 
+/* Reset text color inside user profile dropdown in header to prevent inheriting header's light text color */
+.app-header app-user-inner {
+  color: #5E6278 !important;
+  
+  .fw-bolder,
+  div.fw-bolder {
+    color: #181C32 !important;
+  }
+  
+  .text-muted, a.text-muted {
+    color: #A1A5B7 !important;
+  }
+  
+  a.menu-link {
+    color: #5E6278 !important;
+    
+    &:hover {
+      color: #0095E8 !important;
+      background-color: #F5F8FA !important;
+    }
+  }
+}
+
+
 
 
 
