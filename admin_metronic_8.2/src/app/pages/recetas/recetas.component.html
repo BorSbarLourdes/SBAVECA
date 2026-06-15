@@ -28,7 +28,14 @@
         <tbody>
           <tr *ngFor="let r of recipes">
             <td>
-              <span class="text-gray-900 fw-bold fs-6">{{ r.name }}</span>
+              <div class="d-flex align-items-center">
+                <!-- Thumbnail preview -->
+                <div class="symbol symbol-40px me-3 border overflow-hidden bg-light">
+                  <img *ngIf="r.image" [src]="r.image" alt="Receta" style="object-fit: cover; width:100%; height:100%;" />
+                  <span *ngIf="!r.image" class="symbol-label bg-light-primary text-primary fw-bold fs-6">{{ r.name.charAt(0) }}</span>
+                </div>
+                <span class="text-gray-900 fw-bold fs-6">{{ r.name }}</span>
+              </div>
             </td>
             <td>
               <div class="d-flex flex-column gap-1">
@@ -56,73 +63,94 @@
     </div>
 
     <!-- Edit/New Form Block -->
-    <div *ngIf="isModalOpen" class="card bg-light p-6 mt-8 border border-gray-300">
-      <h4 class="text-gray-900 fw-bold mb-4">{{ formId > 0 ? 'Editar' : 'Agregar' }} Receta</h4>
-      <div class="row g-4">
-        <div class="col-md-6">
-          <label class="form-label required">Nombre de la Receta / Producto</label>
-          <input type="text" class="form-control" [(ngModel)]="formName" placeholder="Ej: Croissant de Manteca">
-        </div>
-        <div class="col-md-6">
-          <label class="form-label">Margen de Ganancia (%)</label>
-          <input type="number" class="form-control" [(ngModel)]="formMarginPercent" placeholder="50">
-        </div>
-        <div class="col-md-12">
-          <label class="form-label required">Procedimiento Técnico de Elaboración</label>
-          <textarea class="form-control" rows="3" [(ngModel)]="formInstructions" placeholder="Describa el paso a paso..."></textarea>
-        </div>
+    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);" *ngIf="isModalOpen">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title fw-bold text-gray-900">{{ formId > 0 ? 'Editar' : 'Agregar' }} Receta</h5>
+            <button type="button" class="btn-close" (click)="isModalOpen = false" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="row g-4">
+              <!-- Image uploader and preview row -->
+              <div class="col-12 d-flex align-items-center gap-4 mb-2">
+                <div class="symbol symbol-70px border overflow-hidden bg-light">
+                  <img *ngIf="formImage" [src]="formImage" alt="Vista previa" style="object-fit: cover; width:100%; height:100%;" />
+                  <span *ngIf="!formImage" class="symbol-label bg-light-secondary text-gray-500 fs-1">📷</span>
+                </div>
+                <div>
+                  <label class="form-label d-block text-gray-800 fw-bold">Foto de la Receta / Producto</label>
+                  <input type="file" class="form-control form-control-sm" accept="image/*" (change)="onFileChange($event)">
+                  <div class="form-text text-muted fs-8">Suba un archivo de imagen (.png, .jpg, .webp) para mostrar en la ficha y menú.</div>
+                </div>
+              </div>
 
-        <!-- Add Ingredient Subform -->
-        <div class="col-md-12 border-top border-gray-300 pt-4 mt-6">
-          <h5 class="text-gray-800 fw-bold mb-4">Ingredientes de la Receta</h5>
-          
-          <div class="row g-3 align-items-end mb-4">
-            <div class="col-md-6">
-              <label class="form-label">Seleccionar Ingrediente del Stock</label>
-              <select class="form-select" [(ngModel)]="tempStockId">
-                <option *ngFor="let s of stockItems" [value]="s.id">{{ s.name }} ({{ s.unit }})</option>
-              </select>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">Cantidad Requerida</label>
-              <input type="number" step="0.01" class="form-control" [(ngModel)]="tempQuantity">
-            </div>
-            <div class="col-md-2">
-              <button class="btn btn-secondary w-100" (click)="addTempIngredient()">Agregar</button>
+              <div class="col-12 col-md-6">
+                <label class="form-label required">Nombre de la Receta / Producto</label>
+                <input type="text" class="form-control" [(ngModel)]="formName" placeholder="Ej: Croissant de Manteca">
+              </div>
+              <div class="col-12 col-md-6">
+                <label class="form-label">Margen de Ganancia (%)</label>
+                <input type="number" class="form-control" [(ngModel)]="formMarginPercent" placeholder="50">
+              </div>
+              <div class="col-12">
+                <label class="form-label required">Procedimiento Técnico de Elaboración</label>
+                <textarea class="form-control" rows="3" [(ngModel)]="formInstructions" placeholder="Describa el paso a paso..."></textarea>
+              </div>
+
+              <!-- Add Ingredient Subform -->
+              <div class="col-12 border-top border-gray-300 pt-4 mt-6">
+                <h5 class="text-gray-800 fw-bold mb-4">Ingredientes de la Receta</h5>
+                
+                <div class="row g-3 align-items-end mb-4">
+                  <div class="col-12 col-sm-6">
+                    <label class="form-label">Seleccionar Ingrediente del Stock</label>
+                    <select class="form-select" [(ngModel)]="tempStockId">
+                      <option *ngFor="let s of stockItems" [value]="s.id">{{ s.name }} ({{ s.unit }})</option>
+                    </select>
+                  </div>
+                  <div class="col-12 col-sm-4">
+                    <label class="form-label">Cantidad Requerida</label>
+                    <input type="number" step="0.01" class="form-control" [(ngModel)]="tempQuantity">
+                  </div>
+                  <div class="col-12 col-sm-2">
+                    <button class="btn btn-secondary w-100" (click)="addTempIngredient()">Agregar</button>
+                  </div>
+                </div>
+
+                <!-- Added Ingredients Table -->
+                <div class="table-responsive" *ngIf="formIngredients.length > 0">
+                  <table class="table table-row-dashed table-row-gray-200 align-middle gs-0 gy-2">
+                    <thead>
+                      <tr class="fw-bold text-muted fs-7">
+                        <th>Ingrediente</th>
+                        <th class="text-end">Cantidad</th>
+                        <th class="text-end">Acción</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let ing of formIngredients; let i = index">
+                        <td>{{ getIngredientName(ing.stockId) }}</td>
+                        <td class="text-end text-gray-900 fw-bold">
+                          {{ ing.quantity }} {{ getIngredientUnit(ing.stockId) }}
+                        </td>
+                        <td class="text-end">
+                          <button class="btn btn-icon btn-bg-light btn-active-color-danger btn-sm" (click)="removeIngredient(i)">
+                            <app-keenicon name="trash" class="fs-3"></app-keenicon>
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
           </div>
-
-          <!-- Added Ingredients Table -->
-          <div class="table-responsive" *ngIf="formIngredients.length > 0">
-            <table class="table table-row-dashed table-row-gray-200 align-middle gs-0 gy-2">
-              <thead>
-                <tr class="fw-bold text-muted fs-7">
-                  <th>Ingrediente</th>
-                  <th class="text-end">Cantidad</th>
-                  <th class="text-end">Acción</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let ing of formIngredients; let i = index">
-                  <td>{{ getIngredientName(ing.stockId) }}</td>
-                  <td class="text-end text-gray-900 fw-bold">
-                    {{ ing.quantity }} {{ getIngredientUnit(ing.stockId) }}
-                  </td>
-                  <td class="text-end">
-                    <button class="btn btn-icon btn-bg-light btn-active-color-danger btn-sm" (click)="removeIngredient(i)">
-                      <app-keenicon name="trash" class="fs-3"></app-keenicon>
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" (click)="isModalOpen = false">Cancelar</button>
+            <button class="btn btn-primary" (click)="save()">Guardar Receta</button>
           </div>
         </div>
-      </div>
-
-      <div class="d-flex justify-content-end gap-3 mt-6">
-        <button class="btn btn-secondary" (click)="isModalOpen = false">Cancelar</button>
-        <button class="btn btn-primary" (click)="save()">Guardar Receta</button>
       </div>
     </div>
   </div>

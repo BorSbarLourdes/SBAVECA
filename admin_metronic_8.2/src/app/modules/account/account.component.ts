@@ -1,11 +1,19 @@
 import { Component, OnInit } from '@angular/core';
+import { Observable } from 'rxjs';
+import { AuthService, UserType } from '../auth';
+import { PageInfoService } from '../../_metronic/layout/core/page-info.service';
 
 @Component({
   selector: 'app-account',
   templateUrl: './account.component.html',
 })
 export class AccountComponent implements OnInit {
-  constructor() {}
+  user$: Observable<UserType>;
 
-  ngOnInit(): void {}
+  constructor(private auth: AuthService, private pageInfo: PageInfoService) {}
+
+  ngOnInit(): void {
+    this.user$ = this.auth.currentUserSubject.asObservable();
+    this.pageInfo.updateTitle('Mi Perfil');
+  }
 }

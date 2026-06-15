@@ -90,6 +90,10 @@ export class AuthService implements OnDestroy {
         userModel.email = foundUser.email;
         userModel.roles = foundUser.roleIds;
         userModel.role = userRoles.map((r: any) => r.name).join(', ');
+        userModel.phone = foundUser.phone || '';
+        const nameParts = (foundUser.name || '').split(' ');
+        userModel.firstname = foundUser.firstname || nameParts[0] || '';
+        userModel.lastname = foundUser.lastname || nameParts.slice(1).join(' ') || '';
         userModel.pic = foundUser.id === 1 ? './assets/media/avatars/300-1.jpg' : foundUser.id === 2 ? './assets/media/avatars/300-6.jpg' : './assets/media/avatars/300-20.jpg';
 
         this.currentUserSubject.next(userModel);
@@ -242,6 +246,10 @@ export class AuthService implements OnDestroy {
         userModel.email = foundUser.email;
         userModel.roles = foundUser.roleIds;
         userModel.role = userRoles.map((r: any) => r.name).join(', ');
+        userModel.phone = foundUser.phone || '';
+        const nameParts = (foundUser.name || '').split(' ');
+        userModel.firstname = foundUser.firstname || nameParts[0] || '';
+        userModel.lastname = foundUser.lastname || nameParts.slice(1).join(' ') || '';
         userModel.pic = foundUser.id === 1 ? './assets/media/avatars/300-1.jpg' : foundUser.id === 2 ? './assets/media/avatars/300-6.jpg' : './assets/media/avatars/300-20.jpg';
 
         this.currentUserSubject.next(userModel);

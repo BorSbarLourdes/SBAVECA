@@ -25,15 +25,15 @@
                 *ngFor="let r of recipes" 
                 (click)="selectRecipe(r)"
                 [ngClass]="{'bg-light-primary border-primary': selectedRecipe?.id === r.id, 'bg-light hover-elevate-up': selectedRecipe?.id !== r.id}"
-                class="cursor-pointer p-4 rounded border border-transparent transition-all d-flex align-items-center justify-content-between"
+                class="cursor-pointer p-4 rounded border border-transparent transition-all"
                 [attr.title]="'Ver desglose de ' + r.name"
                 ngbTooltip="Click para ver desglose de costos"
               >
-                <div>
-                  <span class="fs-6 fw-bold text-gray-800 d-block">{{ r.name }}</span>
-                  <span class="fs-8 text-muted fw-semibold">{{ r.ingredients.length }} ingredientes</span>
+                <div class="d-flex align-items-start justify-content-between gap-2">
+                  <span class="fs-6 fw-bold text-gray-800">{{ r.name }}</span>
+                  <span class="badge badge-light-primary fw-bold flex-shrink-0">{{ r.marginPercent }}% Margen</span>
                 </div>
-                <span class="badge badge-light-primary fw-bold">{{ r.marginPercent }}% Margen</span>
+                <span class="fs-8 text-muted fw-semibold mt-1 d-block">{{ r.ingredients.length }} ingredientes</span>
               </div>
             </div>
           </div>
@@ -61,6 +61,11 @@
             </div>
           </div>
           <div class="card-body pt-3">
+            <!-- Recipe Image Banner -->
+            <div class="mb-6 rounded overflow-hidden border bg-light d-flex justify-content-center align-items-center" style="max-height: 220px;" *ngIf="selectedRecipe.image">
+              <img [src]="selectedRecipe.image" alt="Foto Receta" style="width: 100%; height: 220px; object-fit: cover;" />
+            </div>
+
             <h5 class="fw-bold text-gray-800 mb-4">Ingredientes y Costo de Producción</h5>
             <div class="table-responsive">
               <table class="table table-row-dashed table-row-gray-200 align-middle gs-0 gy-3">

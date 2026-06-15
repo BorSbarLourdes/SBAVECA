@@ -75,52 +75,60 @@
     </div>
 
     <!-- Edit/New Form Block -->
-    <div *ngIf="isModalOpen" class="card bg-light p-6 mt-8 border border-gray-300">
-      <h4 class="text-gray-900 fw-bold mb-4">{{ formId > 0 ? 'Editar' : 'Registrar' }} Cliente</h4>
-      <form (submit)="save(); $event.preventDefault()">
-        <div class="row g-4">
-          <div class="col-md-6">
-            <label class="form-label required">Nombre</label>
-            <input type="text" class="form-control" [(ngModel)]="formName" name="name" required />
+    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);" *ngIf="isModalOpen">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title fw-bold text-gray-900">{{ formId > 0 ? 'Editar' : 'Registrar' }} Cliente</h5>
+            <button type="button" class="btn-close" (click)="isModalOpen = false" aria-label="Close"></button>
           </div>
-          <div class="col-md-6">
-            <label class="form-label required">Apellido</label>
-            <input type="text" class="form-control" [(ngModel)]="formLastname" name="lastname" required />
-          </div>
-          <div class="col-md-4">
-            <label class="form-label required">Correo Electrónico</label>
-            <input type="email" class="form-control" [(ngModel)]="formEmail" name="email" required />
-          </div>
-          <div class="col-md-4">
-            <label class="form-label">Teléfono</label>
-            <input type="text" class="form-control" [(ngModel)]="formPhone" name="phone" />
-          </div>
-          <div class="col-md-4">
-            <label class="form-label">Puntos Acumulados</label>
-            <input type="number" class="form-control" [(ngModel)]="formPoints" name="points" min="0" />
-          </div>
-          <div class="col-md-12 mt-6">
-            <div class="d-flex align-items-center gap-6">
-              <label class="form-check form-check-custom form-check-solid">
-                <input class="form-check-input" type="checkbox" [(ngModel)]="formIsVIP" name="isVIP" />
-                <span class="form-check-label fw-bold text-gray-800">Cliente Destacado (VIP con Descuento Especial)</span>
-              </label>
-              <div *ngIf="formIsVIP" class="d-flex align-items-center gap-2">
-                <label class="form-label mb-0 fs-7 text-nowrap">Porcentaje Descuento:</label>
-                <div class="input-group input-group-sm w-100px">
-                  <input type="number" class="form-control" [(ngModel)]="formVIPDiscount" name="vipDiscount" min="0" max="100" />
-                  <span class="input-group-text">%</span>
+          <form (submit)="save(); $event.preventDefault()">
+            <div class="modal-body">
+              <div class="row g-4">
+                <div class="col-12 col-md-6">
+                  <label class="form-label required">Nombre</label>
+                  <input type="text" class="form-control" [(ngModel)]="formName" name="name" required />
+                </div>
+                <div class="col-12 col-md-6">
+                  <label class="form-label required">Apellido</label>
+                  <input type="text" class="form-control" [(ngModel)]="formLastname" name="lastname" required />
+                </div>
+                <div class="col-12 col-sm-6 col-md-4">
+                  <label class="form-label required">Correo Electrónico</label>
+                  <input type="email" class="form-control" [(ngModel)]="formEmail" name="email" required />
+                </div>
+                <div class="col-12 col-sm-6 col-md-4">
+                  <label class="form-label">Teléfono</label>
+                  <input type="text" class="form-control" [(ngModel)]="formPhone" name="phone" />
+                </div>
+                <div class="col-12 col-sm-6 col-md-4">
+                  <label class="form-label">Puntos Acumulados</label>
+                  <input type="number" class="form-control" [(ngModel)]="formPoints" name="points" min="0" />
+                </div>
+                <div class="col-md-12 mt-6">
+                  <div class="d-flex align-items-center gap-6">
+                    <label class="form-check form-check-custom form-check-solid">
+                      <input class="form-check-input" type="checkbox" [(ngModel)]="formIsVIP" name="isVIP" />
+                      <span class="form-check-label fw-bold text-gray-800">Cliente Destacado (VIP con Descuento Especial)</span>
+                    </label>
+                    <div *ngIf="formIsVIP" class="d-flex align-items-center gap-2">
+                      <label class="form-label mb-0 fs-7 text-nowrap">Porcentaje Descuento:</label>
+                      <div class="input-group input-group-sm w-100px">
+                        <input type="number" class="form-control" [(ngModel)]="formVIPDiscount" name="vipDiscount" min="0" max="100" />
+                        <span class="input-group-text">%</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" (click)="isModalOpen = false">Cancelar</button>
+              <button type="submit" class="btn btn-primary">Guardar Cliente</button>
+            </div>
+          </form>
         </div>
-
-        <div class="d-flex justify-content-end gap-3 mt-6">
-          <button type="button" class="btn btn-secondary" (click)="isModalOpen = false">Cancelar</button>
-          <button type="submit" class="btn btn-primary">Guardar Cliente</button>
-        </div>
-      </form>
+      </div>
     </div>
   </div>
 </div>

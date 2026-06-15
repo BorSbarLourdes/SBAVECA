@@ -72,67 +72,75 @@
     </div>
 
     <!-- Edit/New Form Block -->
-    <div *ngIf="isModalOpen" class="card bg-light p-6 mt-8 border border-gray-300">
-      <h4 class="text-gray-900 fw-bold mb-4">{{ formId > 0 ? 'Editar' : 'Registrar' }} Ficha de Colaborador</h4>
-      <form (submit)="save(); $event.preventDefault()">
-        <div class="row g-4">
-          <div class="col-md-6">
-            <label class="form-label required">Nombre</label>
-            <input type="text" class="form-control" [(ngModel)]="formName" name="name" required />
+    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);" *ngIf="isModalOpen">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title fw-bold text-gray-900">{{ formId > 0 ? 'Editar' : 'Registrar' }} Ficha de Colaborador</h5>
+            <button type="button" class="btn-close" (click)="isModalOpen = false" aria-label="Close"></button>
           </div>
-          <div class="col-md-6">
-            <label class="form-label required">Apellido</label>
-            <input type="text" class="form-control" [(ngModel)]="formLastname" name="lastname" required />
-          </div>
-          <div class="col-md-4">
-            <label class="form-label required">Correo Electrónico</label>
-            <input type="email" class="form-control" [(ngModel)]="formEmail" name="email" required />
-          </div>
-          <div class="col-md-4">
-            <label class="form-label">Teléfono de Contacto</label>
-            <input type="text" class="form-control" [(ngModel)]="formPhone" name="phone" />
-          </div>
-          <div class="col-md-4">
-            <label class="form-label">Cargo Interno</label>
-            <select class="form-select" [(ngModel)]="formRole" name="role">
-              <option value="Administrador/Dueño">Administrador/Dueño</option>
-              <option value="Empleado">Empleado</option>
-              <option value="Cliente Web">Cliente Web</option>
-            </select>
-          </div>
-          <div class="col-md-4">
-            <label class="form-label">Estado Ficha</label>
-            <select class="form-select" [(ngModel)]="formStatus" name="status">
-              <option value="Activo">Activo</option>
-              <option value="Inactivo">Inactivo (De baja)</option>
-            </select>
-          </div>
-          
-          <!-- CRUD checkboxes internally for record details -->
-          <div class="col-md-8">
-            <label class="form-label d-block">Permisos Operativos Autorizados</label>
-            <div class="d-flex gap-4 mt-3">
-              <label class="form-check form-check-custom form-check-solid">
-                <input class="form-check-input" type="checkbox" [(ngModel)]="formVer" name="ver" />
-                <span class="form-check-label fs-7">Ver Fichas</span>
-              </label>
-              <label class="form-check form-check-custom form-check-solid">
-                <input class="form-check-input" type="checkbox" [(ngModel)]="formEditar" name="editar" />
-                <span class="form-check-label fs-7">Editar Contenido</span>
-              </label>
-              <label class="form-check form-check-custom form-check-solid">
-                <input class="form-check-input" type="checkbox" [(ngModel)]="formBorrar" name="borrar" />
-                <span class="form-check-label fs-7">Eliminar Contenido</span>
-              </label>
+          <form (submit)="save(); $event.preventDefault()">
+            <div class="modal-body">
+              <div class="row g-4">
+                <div class="col-12 col-md-6">
+                  <label class="form-label required">Nombre</label>
+                  <input type="text" class="form-control" [(ngModel)]="formName" name="name" required />
+                </div>
+                <div class="col-12 col-md-6">
+                  <label class="form-label required">Apellido</label>
+                  <input type="text" class="form-control" [(ngModel)]="formLastname" name="lastname" required />
+                </div>
+                <div class="col-12 col-sm-6 col-md-4">
+                  <label class="form-label required">Correo Electrónico</label>
+                  <input type="email" class="form-control" [(ngModel)]="formEmail" name="email" required />
+                </div>
+                <div class="col-12 col-sm-6 col-md-4">
+                  <label class="form-label">Teléfono de Contacto</label>
+                  <input type="text" class="form-control" [(ngModel)]="formPhone" name="phone" />
+                </div>
+                <div class="col-12 col-sm-6 col-md-4">
+                  <label class="form-label">Cargo Interno</label>
+                  <select class="form-select" [(ngModel)]="formRole" name="role">
+                    <option value="Administrador/Dueño">Administrador/Dueño</option>
+                    <option value="Empleado">Empleado</option>
+                    <option value="Cliente Web">Cliente Web</option>
+                  </select>
+                </div>
+                <div class="col-12 col-sm-6 col-md-4">
+                  <label class="form-label">Estado Ficha</label>
+                  <select class="form-select" [(ngModel)]="formStatus" name="status">
+                    <option value="Activo">Activo</option>
+                    <option value="Inactivo">Inactivo (De baja)</option>
+                  </select>
+                </div>
+                
+                <!-- CRUD checkboxes internally for record details -->
+                <div class="col-12 col-md-8">
+                  <label class="form-label d-block">Permisos Operativos Autorizados</label>
+                  <div class="d-flex gap-4 mt-3">
+                    <label class="form-check form-check-custom form-check-solid">
+                      <input class="form-check-input" type="checkbox" [(ngModel)]="formVer" name="ver" />
+                      <span class="form-check-label fs-7">Ver Fichas</span>
+                    </label>
+                    <label class="form-check form-check-custom form-check-solid">
+                      <input class="form-check-input" type="checkbox" [(ngModel)]="formEditar" name="editar" />
+                      <span class="form-check-label fs-7">Editar Contenido</span>
+                    </label>
+                    <label class="form-check form-check-custom form-check-solid">
+                      <input class="form-check-input" type="checkbox" [(ngModel)]="formBorrar" name="borrar" />
+                      <span class="form-check-label fs-7">Eliminar Contenido</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" (click)="isModalOpen = false">Cancelar</button>
+              <button type="submit" class="btn btn-primary">Guardar Colaborador</button>
+            </div>
+          </form>
         </div>
-
-        <div class="d-flex justify-content-end gap-3 mt-6">
-          <button type="button" class="btn btn-secondary" (click)="isModalOpen = false">Cancelar</button>
-          <button type="submit" class="btn btn-primary">Guardar Colaborador</button>
-        </div>
-      </form>
+      </div>
     </div>
   </div>
 </div>

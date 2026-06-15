@@ -47,6 +47,7 @@ export interface Recipe {
   ingredients: RecipeIngredient[];
   instructions: string;
   marginPercent: number; // Porcentaje de ganancia deseado (ej. 50%)
+  image?: string;
 }
 
 export interface Order {

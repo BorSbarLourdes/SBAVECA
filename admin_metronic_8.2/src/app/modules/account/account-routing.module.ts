@@ -10,15 +10,11 @@ const routes: Routes = [
     component: AccountComponent,
     children: [
       {
-        path: 'overview',
-        component: OverviewComponent,
-      },
-      {
         path: 'settings',
         component: SettingsComponent,
       },
-      { path: '', redirectTo: 'overview', pathMatch: 'full' },
-      { path: '**', redirectTo: 'overview', pathMatch: 'full' },
+      { path: '', redirectTo: 'settings', pathMatch: 'full' },
+      { path: '**', redirectTo: 'settings', pathMatch: 'full' },
     ],
   },
 ];

@@ -24,6 +24,7 @@ export class StockComponent implements OnInit, OnDestroy {
   itemMinThreshold = 0;
   itemCostPrice = 0;
   itemSupplierId = 0;
+  itemImage = '';
 
   // Supplier Modal variables
   isSupplierModalOpen = false;
@@ -67,6 +68,7 @@ export class StockComponent implements OnInit, OnDestroy {
     this.itemMinThreshold = 0;
     this.itemCostPrice = 0;
     this.itemSupplierId = this.suppliers.length > 0 ? this.suppliers[0].id : 0;
+    this.itemImage = '';
     this.isItemModalOpen = true;
   }
 
@@ -79,12 +81,24 @@ export class StockComponent implements OnInit, OnDestroy {
     this.itemMinThreshold = item.minThreshold;
     this.itemCostPrice = item.costPrice;
     this.itemSupplierId = item.supplierId;
+    this.itemImage = item.image || '';
     this.isItemModalOpen = true;
   }
 
   deleteItem(id: number) {
     if (confirm('¿Está seguro de que desea eliminar este artículo?')) {
       this.stateService.deleteStockItem(id);
+    }
+  }
+
+  onFileChange(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.itemImage = e.target.result;
+      };
+      reader.readAsDataURL(file);
     }
   }
 
@@ -103,6 +117,7 @@ export class StockComponent implements OnInit, OnDestroy {
       unit: this.itemUnit,
       costPrice: this.itemCostPrice,
       supplierId: +this.itemSupplierId,
+      image: this.itemImage
     };
 
     this.stateService.saveStockItem(item);

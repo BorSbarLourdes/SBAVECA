@@ -45,6 +45,13 @@
                 <div class="d-flex align-items-center">
                   <span class="bullet bullet-bar h-30px w-5px me-3"
                         [ngClass]="item.quantity < item.minThreshold ? 'bg-danger' : 'bg-success'"></span>
+                  
+                  <!-- Thumbnail preview -->
+                  <div class="symbol symbol-40px me-3 border overflow-hidden bg-light">
+                    <img *ngIf="item.image" [src]="item.image" alt="Foto Insumo" style="object-fit: cover; width:100%; height:100%;" />
+                    <span *ngIf="!item.image" class="symbol-label bg-light-primary text-primary fw-bold fs-6">{{ item.name.charAt(0) }}</span>
+                  </div>
+
                   <span class="text-gray-900 fw-bold fs-6">{{ item.name }}</span>
                 </div>
               </td>
@@ -148,73 +155,104 @@
 </div>
 
 <!-- ITEM MODAL FORM -->
-<div *ngIf="isItemModalOpen" class="card bg-light p-6 mt-8 border border-gray-300">
-  <h4 class="text-gray-900 fw-bold mb-4">{{ itemId > 0 ? 'Editar' : 'Agregar' }} Insumo / Artículo</h4>
-  <div class="row g-4">
-    <div class="col-md-6">
-      <label class="form-label required">Nombre del Insumo</label>
-      <input type="text" class="form-control" [(ngModel)]="itemName">
+<div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);" *ngIf="isItemModalOpen">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold text-gray-900">{{ itemId > 0 ? 'Editar' : 'Agregar' }} Insumo / Artículo</h5>
+        <button type="button" class="btn-close" (click)="isItemModalOpen = false" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-4">
+          <!-- Image upload and preview row -->
+          <div class="col-12 d-flex align-items-center gap-4 mb-2">
+            <div class="symbol symbol-70px border overflow-hidden bg-light">
+              <img *ngIf="itemImage" [src]="itemImage" alt="Vista previa" style="object-fit: cover; width:100%; height:100%;" />
+              <span *ngIf="!itemImage" class="symbol-label bg-light-secondary text-gray-500 fs-1">📷</span>
+            </div>
+            <div>
+              <label class="form-label d-block text-gray-800 fw-bold">Foto del Insumo / Producto</label>
+              <input type="file" class="form-control form-control-sm" accept="image/*" (change)="onFileChange($event)">
+              <div class="form-text text-muted fs-8">Suba un archivo de imagen (.png, .jpg, .webp) para mostrar en el listado.</div>
+            </div>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <label class="form-label required">Nombre del Insumo</label>
+            <input type="text" class="form-control" [(ngModel)]="itemName">
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label">Categoría</label>
+            <select class="form-select" [(ngModel)]="itemCategory">
+              <option value="ingrediente">Ingrediente</option>
+              <option value="utensilio">Utensilio</option>
+              <option value="producto">Producto Terminado</option>
+            </select>
+          </div>
+          <div class="col-12 col-sm-6 col-lg-3">
+            <label class="form-label required">Cantidad Disponible</label>
+            <input type="number" class="form-control" [(ngModel)]="itemQuantity">
+          </div>
+          <div class="col-12 col-sm-6 col-lg-3">
+            <label class="form-label">Unidad de Medida</label>
+            <input type="text" class="form-control" [(ngModel)]="itemUnit" placeholder="kg, unidades, etc.">
+          </div>
+          <div class="col-12 col-sm-6 col-lg-3">
+            <label class="form-label">Umbral de Alerta Mínimo</label>
+            <input type="number" class="form-control" [(ngModel)]="itemMinThreshold">
+          </div>
+          <div class="col-12 col-sm-6 col-lg-3">
+            <label class="form-label required">Precio Unitario de Compra ($)</label>
+            <input type="number" class="form-control" [(ngModel)]="itemCostPrice">
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label">Proveedor Vinculado</label>
+            <select class="form-select" [(ngModel)]="itemSupplierId">
+              <option *ngFor="let s of suppliers" [value]="s.id">{{ s.name }}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="isItemModalOpen = false">Cancelar</button>
+        <button class="btn btn-primary" (click)="saveItem()">Guardar Insumo</button>
+      </div>
     </div>
-    <div class="col-md-6">
-      <label class="form-label">Categoría</label>
-      <select class="form-select" [(ngModel)]="itemCategory">
-        <option value="ingrediente">Ingrediente</option>
-        <option value="utensilio">Utensilio</option>
-        <option value="producto">Producto Terminado</option>
-      </select>
-    </div>
-    <div class="col-md-3">
-      <label class="form-label required">Cantidad Disponible</label>
-      <input type="number" class="form-control" [(ngModel)]="itemQuantity">
-    </div>
-    <div class="col-md-3">
-      <label class="form-label">Unidad de Medida</label>
-      <input type="text" class="form-control" [(ngModel)]="itemUnit" placeholder="kg, unidades, etc.">
-    </div>
-    <div class="col-md-3">
-      <label class="form-label">Umbral de Alerta Mínimo</label>
-      <input type="number" class="form-control" [(ngModel)]="itemMinThreshold">
-    </div>
-    <div class="col-md-3">
-      <label class="form-label required">Precio Unitario de Compra ($)</label>
-      <input type="number" class="form-control" [(ngModel)]="itemCostPrice">
-    </div>
-    <div class="col-md-6">
-      <label class="form-label">Proveedor Vinculado</label>
-      <select class="form-select" [(ngModel)]="itemSupplierId">
-        <option *ngFor="let s of suppliers" [value]="s.id">{{ s.name }}</option>
-      </select>
-    </div>
-  </div>
-  <div class="d-flex justify-content-end gap-3 mt-6">
-    <button class="btn btn-secondary" (click)="isItemModalOpen = false">Cancelar</button>
-    <button class="btn btn-primary" (click)="saveItem()">Guardar Insumo</button>
   </div>
 </div>
 
 <!-- SUPPLIER MODAL FORM -->
-<div *ngIf="isSupplierModalOpen" class="card bg-light p-6 mt-8 border border-gray-300">
-  <h4 class="text-gray-900 fw-bold mb-4">{{ supplierId > 0 ? 'Editar' : 'Agregar' }} Proveedor</h4>
-  <div class="row g-4">
-    <div class="col-md-6">
-      <label class="form-label required">Nombre Comercial</label>
-      <input type="text" class="form-control" [(ngModel)]="supplierName">
+<div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);" *ngIf="isSupplierModalOpen">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold text-gray-900">{{ supplierId > 0 ? 'Editar' : 'Agregar' }} Proveedor</h5>
+        <button type="button" class="btn-close" (click)="isSupplierModalOpen = false" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-4">
+          <div class="col-12 col-md-6">
+            <label class="form-label required">Nombre Comercial</label>
+            <input type="text" class="form-control" [(ngModel)]="supplierName">
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label required">Correo de Contacto</label>
+            <input type="email" class="form-control" [(ngModel)]="supplierContact">
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label required">Teléfono</label>
+            <input type="text" class="form-control" [(ngModel)]="supplierPhone">
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label">Catálogo (Separar insumos con coma ",")</label>
+            <input type="text" class="form-control" [(ngModel)]="supplierCatalogStr" placeholder="Harina, Manteca, Azúcar">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="isSupplierModalOpen = false">Cancelar</button>
+        <button class="btn btn-primary" (click)="saveSupplier()">Guardar Proveedor</button>
+      </div>
     </div>
-    <div class="col-md-6">
-      <label class="form-label required">Correo de Contacto</label>
-      <input type="email" class="form-control" [(ngModel)]="supplierContact">
-    </div>
-    <div class="col-md-6">
-      <label class="form-label required">Teléfono</label>
-      <input type="text" class="form-control" [(ngModel)]="supplierPhone">
-    </div>
-    <div class="col-md-6">
-      <label class="form-label">Catálogo (Separar insumos con coma ",")</label>
-      <input type="text" class="form-control" [(ngModel)]="supplierCatalogStr" placeholder="Harina, Manteca, Azúcar">
-    </div>
-  </div>
-  <div class="d-flex justify-content-end gap-3 mt-6">
-    <button class="btn btn-secondary" (click)="isSupplierModalOpen = false">Cancelar</button>
-    <button class="btn btn-primary" (click)="saveSupplier()">Guardar Proveedor</button>
   </div>
 </div>

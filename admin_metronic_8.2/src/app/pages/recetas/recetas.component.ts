@@ -18,6 +18,7 @@ export class RecetasComponent implements OnInit {
   formInstructions = '';
   formMarginPercent = 50;
   formIngredients: RecipeIngredient[] = [];
+  formImage = '';
 
   // Add new ingredient temp variables
   tempStockId = 0;
@@ -74,6 +75,7 @@ export class RecetasComponent implements OnInit {
     this.formInstructions = '';
     this.formMarginPercent = 50;
     this.formIngredients = [];
+    this.formImage = '';
     this.tempQuantity = 0;
     this.isModalOpen = true;
   }
@@ -83,10 +85,22 @@ export class RecetasComponent implements OnInit {
     this.formName = recipe.name;
     this.formInstructions = recipe.instructions;
     this.formMarginPercent = recipe.marginPercent;
+    this.formImage = recipe.image || '';
     // deep clone
     this.formIngredients = recipe.ingredients.map(i => ({ ...i }));
     this.tempQuantity = 0;
     this.isModalOpen = true;
+  }
+
+  onFileChange(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.formImage = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
   }
 
   save() {
@@ -100,7 +114,8 @@ export class RecetasComponent implements OnInit {
       name: this.formName,
       ingredients: this.formIngredients,
       instructions: this.formInstructions,
-      marginPercent: this.formMarginPercent
+      marginPercent: this.formMarginPercent,
+      image: this.formImage
     };
 
     this.stateService.saveRecipe(recipe);
