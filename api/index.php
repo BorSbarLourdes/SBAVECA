@@ -352,8 +352,354 @@ if ($route === '/auth/me' && $method === 'GET') {
             }
         }
     }
-    
     send_response(["success" => false, "message" => "No autorizado"], 401);
+}
+
+// Helper function to save base64 uploaded image as physical file in /uploads
+function save_base64_image($base64_string) {
+    if (empty($base64_string)) {
+        return '';
+    }
+    // If it's already a saved URL or path, keep it
+    if (!preg_match('/^data:image\/(\w+);base64,/', $base64_string, $type)) {
+        return $base64_string;
+    }
+    
+    $output_dir = dirname(__DIR__) . '/uploads';
+    if (!is_dir($output_dir)) {
+        mkdir($output_dir, 0755, true);
+    }
+    
+    $ext = strtolower($type[1]);
+    if (!in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
+        $ext = 'jpg';
+    }
+    
+    $data = substr($base64_string, strpos($base64_string, ',') + 1);
+    $data = base64_decode($data);
+    if ($data === false) {
+        return '';
+    }
+    
+    $fileName = uniqid() . '.' . $ext;
+    $filePath = $output_dir . '/' . $fileName;
+    
+    if (file_put_contents($filePath, $data)) {
+        return 'uploads/' . $fileName;
+    }
+    
+    return '';
+}
+
+// Handle CRUD for /insumos (Stock)
+if ($route === '/insumos') {
+    if ($method === 'GET') {
+        $stmt = $pdo->query("SELECT i.idIns as id, i.nombreIns as name, i.categoriaIns as category, 
+                                    i.unidadMedidaIns as unit, i.precioCompraIns as costPrice, 
+                                    i.stockMinimoIns as minThreshold, i.imagenBlobIns as image, 
+                                    i.proveedorIdPro as supplierId, inv.stockActualInv as quantity 
+                             FROM insumo i 
+                             LEFT JOIN inventario inv ON i.idIns = inv.insumoIdInv 
+                             WHERE i.estadoIns = 'Activo'");
+        $items = $stmt->fetchAll();
+        
+        foreach ($items as &$item) {
+            $item['id'] = (int)$item['id'];
+            $item['quantity'] = $item['quantity'] !== null ? (int)$item['quantity'] : 0;
+            $item['minThreshold'] = (int)$item['minThreshold'];
+            $item['costPrice'] = (float)$item['costPrice'];
+            $item['supplierId'] = (int)$item['supplierId'];
+            
+            $cat = $item['category'];
+            if ($cat === 'Producto Terminado') {
+                $item['category'] = 'producto';
+            } else if ($cat === 'Utensilio') {
+                $item['category'] = 'utensilio';
+            } else {
+                $item['category'] = 'ingrediente';
+            }
+        }
+        send_response($items);
+    }
+    
+    if ($method === 'POST') {
+        $input = json_decode(file_get_contents('php://input'), true);
+        
+        $id = isset($input['id']) ? (int)$input['id'] : 0;
+        $name = $input['name'] ?? '';
+        $category = $input['category'] ?? 'ingrediente';
+        $unit = $input['unit'] ?? '';
+        $quantity = isset($input['quantity']) ? (int)$input['quantity'] : 0;
+        $minThreshold = isset($input['minThreshold']) ? (int)$input['minThreshold'] : 0;
+        $costPrice = isset($input['costPrice']) ? (float)$input['costPrice'] : 0.0;
+        $supplierId = isset($input['supplierId']) ? (int)$input['supplierId'] : 0;
+        $image = $input['image'] ?? '';
+
+        if (empty($name)) {
+            send_response(["success" => false, "message" => "El nombre es obligatorio"], 400);
+        }
+        
+        if ($supplierId <= 0) {
+            $stmt = $pdo->query("SELECT idPro FROM proveedor LIMIT 1");
+            $defaultSup = $stmt->fetch();
+            $supplierId = $defaultSup ? (int)$defaultSup['idPro'] : 1;
+        }
+        
+        $mysqlCategory = 'Ingrediente';
+        if ($category === 'producto') {
+            $mysqlCategory = 'Producto Terminado';
+        } else if ($category === 'utensilio') {
+            $mysqlCategory = 'Utensilio';
+        }
+        
+        $imagePath = save_base64_image($image);
+
+        try {
+            $pdo->beginTransaction();
+            
+            if ($id > 0) {
+                $stmt = $pdo->prepare("UPDATE insumo SET nombreIns = ?, categoriaIns = ?, unidadMedidaIns = ?, precioCompraIns = ?, stockMinimoIns = ?, imagenBlobIns = ?, proveedorIdPro = ? WHERE idIns = ?");
+                $stmt->execute([$name, $mysqlCategory, $unit, $costPrice, $minThreshold, $imagePath, $supplierId, $id]);
+                
+                $stmtCheck = $pdo->prepare("SELECT idInv FROM inventario WHERE insumoIdInv = ?");
+                $stmtCheck->execute([$id]);
+                if ($stmtCheck->fetch()) {
+                    $stmtInv = $pdo->prepare("UPDATE inventario SET stockActualInv = ?, stockMinimoInv = ?, unidadMedidaInv = ? WHERE insumoIdInv = ?");
+                    $stmtInv->execute([$quantity, $minThreshold, $unit, $id]);
+                } else {
+                    $stmtInv = $pdo->prepare("INSERT INTO inventario (insumoIdInv, stockActualInv, stockMinimoInv, unidadMedidaInv) VALUES (?, ?, ?, ?)");
+                    $stmtInv->execute([$id, $quantity, $minThreshold, $unit]);
+                }
+            } else {
+                $stmt = $pdo->prepare("INSERT INTO insumo (nombreIns, categoriaIns, unidadMedidaIns, precioCompraIns, stockMinimoIns, imagenBlobIns, proveedorIdPro, estadoIns) VALUES (?, ?, ?, ?, ?, ?, ?, 'Activo')");
+                $stmt->execute([$name, $mysqlCategory, $unit, $costPrice, $minThreshold, $imagePath, $supplierId]);
+                $id = $pdo->lastInsertId();
+                
+                $stmtInv = $pdo->prepare("INSERT INTO inventario (insumoIdInv, stockActualInv, stockMinimoInv, unidadMedidaInv) VALUES (?, ?, ?, ?)");
+                $stmtInv->execute([$id, $quantity, $minThreshold, $unit]);
+            }
+            
+            $pdo->commit();
+            send_response(["success" => true, "id" => (int)$id, "image" => $imagePath]);
+        } catch (Exception $e) {
+            $pdo->rollBack();
+            send_response(["success" => false, "message" => "Error al guardar el insumo: " . $e->getMessage()], 500);
+        }
+    }
+    
+    if ($method === 'DELETE') {
+        $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+        if ($id <= 0) {
+            send_response(["success" => false, "message" => "ID no proporcionado"], 400);
+        }
+        
+        try {
+            // Check if insumo is used in active recipes
+            $stmtCheck = $pdo->prepare("SELECT r.nombreReceta FROM receta_ingrediente ri JOIN recetas r ON ri.recetaIdRecIng = r.idReceta WHERE ri.insumoIdRecIng = ? AND r.estadoReceta = 'Activa'");
+            $stmtCheck->execute([$id]);
+            $usedInRecipes = $stmtCheck->fetchAll(PDO::FETCH_COLUMN);
+            
+            if (!empty($usedInRecipes)) {
+                $recipeNames = implode(', ', $usedInRecipes);
+                send_response([
+                    "success" => false, 
+                    "message" => "No se puede eliminar el insumo porque esta siendo utilizado en las siguientes recetas activas: $recipeNames. Por favor, remueva el insumo de esas recetas antes de continuar."
+                ], 400);
+            }
+            
+            $pdo->beginTransaction();
+            
+            $stmt = $pdo->prepare("UPDATE insumo SET estadoIns = 'Inactivo' WHERE idIns = ?");
+            $stmt->execute([$id]);
+            
+            $pdo->commit();
+            send_response(["success" => true]);
+        } catch (Exception $e) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+            send_response(["success" => false, "message" => "Error al eliminar el insumo: " . $e->getMessage()], 500);
+        }
+    }
+}
+
+// Handle CRUD for /proveedores (Suppliers)
+if ($route === '/proveedores') {
+    if ($method === 'GET') {
+        $stmt = $pdo->query("SELECT idPro as id, nombrePro as name, emailPro as contact, 
+                                    telefonoPro as phone, direccionPro as catalogStr 
+                             FROM proveedor");
+        $items = $stmt->fetchAll();
+        
+        foreach ($items as &$item) {
+            $item['id'] = (int)$item['id'];
+            
+            $str = $item['catalogStr'];
+            if (strpos($str, 'Catalog: ') === 0) {
+                $catStr = substr($str, 9);
+                $item['catalog'] = $catStr ? array_map('trim', explode(',', $catStr)) : [];
+            } else {
+                $item['catalog'] = [];
+            }
+            unset($item['catalogStr']);
+        }
+        send_response($items);
+    }
+    
+    if ($method === 'POST') {
+        $input = json_decode(file_get_contents('php://input'), true);
+        
+        $id = isset($input['id']) ? (int)$input['id'] : 0;
+        $name = $input['name'] ?? '';
+        $contact = $input['contact'] ?? '';
+        $phone = $input['phone'] ?? '';
+        $catalog = $input['catalog'] ?? [];
+        
+        if (empty($name) || empty($contact) || empty($phone)) {
+            send_response(["success" => false, "message" => "Faltan campos obligatorios"], 400);
+        }
+        
+        $catalogStr = 'Catalog: ' . implode(', ', $catalog);
+        
+        try {
+            if ($id > 0) {
+                $stmt = $pdo->prepare("UPDATE proveedor SET nombrePro = ?, emailPro = ?, telefonoPro = ?, direccionPro = ? WHERE idPro = ?");
+                $stmt->execute([$name, $contact, $phone, $catalogStr, $id]);
+            } else {
+                $stmt = $pdo->prepare("INSERT INTO proveedor (nombrePro, emailPro, telefonoPro, direccionPro, CUITPro, ciudadPro, provinciaPro) VALUES (?, ?, ?, ?, '00-00000000-0', 'Desconocida', 'Desconocida')");
+                $stmt->execute([$name, $contact, $phone, $catalogStr]);
+                $id = $pdo->lastInsertId();
+            }
+            send_response(["success" => true, "id" => (int)$id]);
+        } catch (Exception $e) {
+            send_response(["success" => false, "message" => "Error al guardar el proveedor: " . $e->getMessage()], 500);
+        }
+    }
+    
+    if ($method === 'DELETE') {
+        $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+        if ($id <= 0) {
+            send_response(["success" => false, "message" => "ID no proporcionado"], 400);
+        }
+        
+        try {
+            $stmt = $pdo->prepare("DELETE FROM proveedor WHERE idPro = ?");
+            $stmt->execute([$id]);
+            send_response(["success" => true]);
+        } catch (Exception $e) {
+            // Check for foreign key constraint violation (SQLSTATE 23000)
+            if ($e->getCode() == '23000') {
+                send_response([
+                    "success" => false, 
+                    "message" => "No se puede eliminar el proveedor porque tiene insumos asociados en el inventario. Por favor, elimine o reasigne los insumos antes de continuar."
+                ], 400);
+            }
+            send_response(["success" => false, "message" => "Error al eliminar el proveedor: " . $e->getMessage()], 500);
+        }
+    }
+}
+
+// Handle CRUD for /recetas (Recipes)
+if ($route === '/recetas') {
+    if ($method === 'GET') {
+        $stmt = $pdo->query("SELECT idReceta as id, nombreReceta as name, instruccionesReceta as instructions, 
+                                    margenGananciaReceta as marginPercent, descripcionReceta as image 
+                             FROM recetas 
+                             WHERE estadoReceta = 'Activa'");
+        $recipes = $stmt->fetchAll();
+        
+        foreach ($recipes as &$r) {
+            $r['id'] = (int)$r['id'];
+            $r['marginPercent'] = (float)$r['marginPercent'];
+            
+            $stmtIng = $pdo->prepare("SELECT insumoIdRecIng as stockId, cantidadNecesaria as quantity 
+                                      FROM receta_ingrediente 
+                                      WHERE recetaIdRecIng = ?");
+            $stmtIng->execute([$r['id']]);
+            $ingredients = $stmtIng->fetchAll();
+            
+            foreach ($ingredients as &$ing) {
+                $ing['stockId'] = (int)$ing['stockId'];
+                $ing['quantity'] = (float)$ing['quantity'];
+            }
+            $r['ingredients'] = $ingredients;
+        }
+        send_response($recipes);
+    }
+    
+    if ($method === 'POST') {
+        $input = json_decode(file_get_contents('php://input'), true);
+        
+        $id = isset($input['id']) ? (int)$input['id'] : 0;
+        $name = $input['name'] ?? '';
+        $instructions = $input['instructions'] ?? '';
+        $marginPercent = isset($input['marginPercent']) ? (float)$input['marginPercent'] : 50.0;
+        $image = $input['image'] ?? '';
+        $ingredients = $input['ingredients'] ?? [];
+        
+        if (empty($name) || empty($ingredients)) {
+            send_response(["success" => false, "message" => "Nombre e ingredientes son obligatorios"], 400);
+        }
+        
+        $imagePath = save_base64_image($image);
+        
+        try {
+            $pdo->beginTransaction();
+            
+            if ($id > 0) {
+                $stmt = $pdo->prepare("UPDATE recetas SET nombreReceta = ?, instruccionesReceta = ?, margenGananciaReceta = ?, descripcionReceta = ? WHERE idReceta = ?");
+                $stmt->execute([$name, $instructions, $marginPercent, $imagePath, $id]);
+            } else {
+                $stmt = $pdo->prepare("INSERT INTO recetas (nombreReceta, instruccionesReceta, margenGananciaReceta, descripcionReceta, estadoReceta) VALUES (?, ?, ?, ?, 'Activa')");
+                $stmt->execute([$name, $instructions, $marginPercent, $imagePath]);
+                $id = $pdo->lastInsertId();
+            }
+            
+            $stmtDel = $pdo->prepare("DELETE FROM receta_ingrediente WHERE recetaIdRecIng = ?");
+            $stmtDel->execute([$id]);
+            
+            foreach ($ingredients as $ing) {
+                $stockId = (int)$ing['stockId'];
+                $qty = (float)$ing['quantity'];
+                
+                $stmtIns = $pdo->prepare("SELECT unidadMedidaIns, precioCompraIns FROM insumo WHERE idIns = ?");
+                $stmtIns->execute([$stockId]);
+                $insDetails = $stmtIns->fetch();
+                $unit = $insDetails ? $insDetails['unidadMedidaIns'] : 'unidades';
+                $cost = $insDetails ? (float)$insDetails['precioCompraIns'] : 0.0;
+                $costProportional = $qty * $cost;
+                
+                $stmtAdd = $pdo->prepare("INSERT INTO receta_ingrediente (recetaIdRecIng, insumoIdRecIng, cantidadNecesaria, unidadMedidaRecIng, costoProporcional) VALUES (?, ?, ?, ?, ?)");
+                $stmtAdd->execute([$id, $stockId, $qty, $unit, $costProportional]);
+            }
+            
+            $pdo->commit();
+            send_response(["success" => true, "id" => (int)$id, "image" => $imagePath]);
+        } catch (Exception $e) {
+            $pdo->rollBack();
+            send_response(["success" => false, "message" => "Error al guardar la receta: " . $e->getMessage()], 500);
+        }
+    }
+    
+    if ($method === 'DELETE') {
+        $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+        if ($id <= 0) {
+            send_response(["success" => false, "message" => "ID no proporcionado"], 400);
+        }
+        
+        try {
+            $pdo->beginTransaction();
+            
+            $stmt = $pdo->prepare("UPDATE recetas SET estadoReceta = 'Inactiva' WHERE idReceta = ?");
+            $stmt->execute([$id]);
+            
+            $pdo->commit();
+            send_response(["success" => true]);
+        } catch (Exception $e) {
+            $pdo->rollBack();
+            send_response(["success" => false, "message" => "Error al eliminar la receta: " . $e->getMessage()], 500);
+        }
+    }
 }
 
 // 404 Route handler

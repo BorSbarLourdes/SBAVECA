@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../environments/environment';
 
 export interface Employee {
   id: number;
@@ -125,39 +127,50 @@ export class StateService {
   public systemRoles$ = new BehaviorSubject<any[]>([]);
   public systemPermissions$ = new BehaviorSubject<any[]>([]);
 
-  constructor() {
+  private API_URL = `${environment.apiUrl}`;
+
+  constructor(private http: HttpClient) {
     this.loadInitialData();
   }
 
   private loadInitialData() {
+    // 1. Fetch stock items from database
+    this.http.get<StockItem[]>(`${this.API_URL}/insumos`).subscribe({
+      next: (data) => {
+        data.forEach(item => {
+          if (item.image && !item.image.startsWith('data:') && !item.image.startsWith('http')) {
+            item.image = `${environment.URL_BACKEND}${item.image}`;
+          }
+        });
+        this.stock$.next(data);
+      },
+      error: (e) => console.error('Error loading stock items:', e)
+    });
+
+    // 2. Fetch suppliers from database
+    this.http.get<Supplier[]>(`${this.API_URL}/proveedores`).subscribe({
+      next: (data) => this.suppliers$.next(data),
+      error: (e) => console.error('Error loading suppliers:', e)
+    });
+
+    // 3. Fetch recipes from database
+    this.http.get<Recipe[]>(`${this.API_URL}/recetas`).subscribe({
+      next: (data) => {
+        data.forEach(r => {
+          if (r.image && !r.image.startsWith('data:') && !r.image.startsWith('http')) {
+            r.image = `${environment.URL_BACKEND}${r.image}`;
+          }
+        });
+        this.recipes$.next(data);
+      },
+      error: (e) => console.error('Error loading recipes:', e)
+    });
+
     const dataStr = localStorage.getItem(this.STORAGE_KEY);
     if (dataStr) {
       try {
         const parsed = JSON.parse(dataStr);
-        
-        // Clean up broken default image paths if they exist in local storage
-        let cleaned = false;
-        if (parsed.stock) {
-          parsed.stock.forEach((item: any) => {
-            if (item.image && item.image.startsWith('./assets/media/stock/')) {
-              delete item.image;
-              cleaned = true;
-            }
-          });
-        }
-        if (parsed.recipes) {
-          parsed.recipes.forEach((item: any) => {
-            if (item.image && item.image.startsWith('./assets/media/stock/')) {
-              delete item.image;
-              cleaned = true;
-            }
-          });
-        }
-
         this.employees$.next(parsed.employees || []);
-        this.suppliers$.next(parsed.suppliers || []);
-        this.stock$.next(parsed.stock || []);
-        this.recipes$.next(parsed.recipes || []);
         this.clients$.next(parsed.clients || []);
         this.orders$.next(parsed.orders || []);
         this.transactions$.next(parsed.transactions || []);
@@ -168,54 +181,13 @@ export class StateService {
         this.systemUsers$.next(parsed.systemUsers || []);
         this.systemRoles$.next(parsed.systemRoles || []);
         this.systemPermissions$.next(parsed.systemPermissions || []);
-
-        if (cleaned) {
-          this.saveToStorage();
-        }
         return;
       } catch (e) {
         console.error('Error parsing stored data, resetting...', e);
       }
     }
 
-    // Default mock data if none exists
-    const defaultSuppliers: Supplier[] = [
-      { id: 1, name: 'Distribuidora Harinera S.A.', contact: 'harinas@dist.com', phone: '11456789', catalog: ['Harina de Trigo 000', 'Manteca'] },
-      { id: 2, name: 'Insumos Panadería Express', contact: 'panaderia@express.com', phone: '11987654', catalog: ['Levadura Seca', 'Azúcar Común'] }
-    ];
-
-    const defaultStock: StockItem[] = [
-      { id: 1, name: 'Harina de Trigo 000', category: 'ingrediente', quantity: 150, minThreshold: 20, unit: 'kg', costPrice: 450, supplierId: 1 },
-      { id: 2, name: 'Manteca', category: 'ingrediente', quantity: 8, minThreshold: 5, unit: 'kg', costPrice: 3200, supplierId: 1 },
-      { id: 3, name: 'Levadura Seca', category: 'ingrediente', quantity: 12, minThreshold: 2, unit: 'kg', costPrice: 1500, supplierId: 2 },
-      { id: 4, name: 'Azúcar Común', category: 'ingrediente', quantity: 45, minThreshold: 10, unit: 'kg', costPrice: 600, supplierId: 2 },
-      { id: 5, name: 'Rodillo Profesional', category: 'utensilio', quantity: 3, minThreshold: 1, unit: 'unidades', costPrice: 12000, supplierId: 1 }
-    ];
-
-    const defaultRecipes: Recipe[] = [
-      {
-        id: 1,
-        name: 'Croissant Clásico',
-        ingredients: [
-          { stockId: 1, quantity: 0.15 }, // 150g harina
-          { stockId: 2, quantity: 0.08 }, // 80g manteca
-          { stockId: 4, quantity: 0.03 }  // 30g azucar
-        ],
-        instructions: 'Mezclar harina, azúcar y agua, amasar, laminar con manteca, fermentar y hornear a 180°C por 20 minutos.',
-        marginPercent: 50
-      },
-      {
-        id: 2,
-        name: 'Pan de Masa Madre',
-        ingredients: [
-          { stockId: 1, quantity: 0.5 },  // 500g harina
-          { stockId: 3, quantity: 0.01 }  // 10g levadura
-        ],
-        instructions: 'Mezclar harina, agua y masa madre, fermentar 24 horas y hornear a 220°C en olla de hierro.',
-        marginPercent: 60
-      }
-    ];
-
+    // Load defaults for other mockup entities not in DB
     const defaultClients: Client[] = [
       { id: 1, name: 'María Belén', lastname: 'Ramos', email: 'belen@example.com', phone: '11223344', points: 350, isVIP: true, vipDiscount: 10 },
       { id: 2, name: 'Juan', lastname: 'Gómez', email: 'juan.gomez@example.com', phone: '55667788', points: 120, isVIP: false, vipDiscount: 0 }
@@ -227,13 +199,7 @@ export class StateService {
     ];
 
     const defaultMenu: WeeklyMenu = {
-      lunes: [1],
-      martes: [2],
-      miercoles: [1],
-      jueves: [2],
-      viernes: [1, 2],
-      sabado: [1],
-      domingo: [2]
+      lunes: [], martes: [], miercoles: [], jueves: [], viernes: [], sabado: [], domingo: []
     };
 
     const defaultOrders: Order[] = [
@@ -282,9 +248,6 @@ export class StateService {
     ];
 
     this.employees$.next(defaultEmployees);
-    this.suppliers$.next(defaultSuppliers);
-    this.stock$.next(defaultStock);
-    this.recipes$.next(defaultRecipes);
     this.clients$.next(defaultClients);
     this.orders$.next(defaultOrders);
     this.transactions$.next(defaultTransactions);
@@ -301,9 +264,6 @@ export class StateService {
     try {
       const data = {
         employees: this.employees$.value,
-        suppliers: this.suppliers$.value,
-        stock: this.stock$.value,
-        recipes: this.recipes$.value,
         clients: this.clients$.value,
         orders: this.orders$.value,
         transactions: this.transactions$.value,
@@ -413,62 +373,128 @@ export class StateService {
 
   // --- SUPPLIERS CRUD ---
   public saveSupplier(supplier: Supplier) {
-    const list = [...this.suppliers$.value];
-    if (supplier.id > 0) {
-      const idx = list.findIndex(s => s.id === supplier.id);
-      if (idx !== -1) list[idx] = supplier;
-    } else {
-      supplier.id = list.length > 0 ? Math.max(...list.map(s => s.id)) + 1 : 1;
-      list.push(supplier);
-    }
-    this.suppliers$.next(list);
-    this.saveToStorage();
+    this.http.post<any>(`${this.API_URL}/proveedores`, supplier).subscribe({
+      next: (res) => {
+        if (res.success) {
+          supplier.id = res.id;
+          const list = [...this.suppliers$.value];
+          const idx = list.findIndex(s => s.id === supplier.id);
+          if (idx !== -1) {
+            list[idx] = supplier;
+          } else {
+            list.push(supplier);
+          }
+          this.suppliers$.next(list);
+        }
+      },
+      error: (e) => {
+        console.error('Error saving supplier:', e);
+        const errMsg = e.error && e.error.message ? e.error.message : 'Error al guardar el proveedor.';
+        alert(errMsg);
+      }
+    });
   }
 
   public deleteSupplier(id: number) {
-    const list = this.suppliers$.value.filter(s => s.id !== id);
-    this.suppliers$.next(list);
-    this.saveToStorage();
+    this.http.delete<any>(`${this.API_URL}/proveedores?id=${id}`).subscribe({
+      next: (res) => {
+        if (res.success) {
+          const list = this.suppliers$.value.filter(s => s.id !== id);
+          this.suppliers$.next(list);
+        }
+      },
+      error: (e) => {
+        console.error('Error deleting supplier:', e);
+        const errMsg = e.error && e.error.message ? e.error.message : 'Error al eliminar el proveedor.';
+        alert(errMsg);
+      }
+    });
   }
 
   // --- STOCK CRUD ---
   public saveStockItem(item: StockItem) {
-    const list = [...this.stock$.value];
-    if (item.id > 0) {
-      const idx = list.findIndex(s => s.id === item.id);
-      if (idx !== -1) list[idx] = item;
-    } else {
-      item.id = list.length > 0 ? Math.max(...list.map(s => s.id)) + 1 : 1;
-      list.push(item);
-    }
-    this.stock$.next(list);
-    this.saveToStorage();
+    this.http.post<any>(`${this.API_URL}/insumos`, item).subscribe({
+      next: (res) => {
+        if (res.success) {
+          item.id = res.id;
+          if (res.image) {
+            item.image = `${environment.URL_BACKEND}${res.image}`;
+          }
+          const list = [...this.stock$.value];
+          const idx = list.findIndex(s => s.id === item.id);
+          if (idx !== -1) {
+            list[idx] = item;
+          } else {
+            list.push(item);
+          }
+          this.stock$.next(list);
+        }
+      },
+      error: (e) => {
+        console.error('Error saving stock item:', e);
+        const errMsg = e.error && e.error.message ? e.error.message : 'Error al guardar el insumo.';
+        alert(errMsg);
+      }
+    });
   }
 
   public deleteStockItem(id: number) {
-    const list = this.stock$.value.filter(s => s.id !== id);
-    this.stock$.next(list);
-    this.saveToStorage();
+    this.http.delete<any>(`${this.API_URL}/insumos?id=${id}`).subscribe({
+      next: (res) => {
+        if (res.success) {
+          const list = this.stock$.value.filter(s => s.id !== id);
+          this.stock$.next(list);
+        }
+      },
+      error: (e) => {
+        console.error('Error deleting stock item:', e);
+        const errMsg = e.error && e.error.message ? e.error.message : 'Error al eliminar el insumo.';
+        alert(errMsg);
+      }
+    });
   }
 
   // --- RECIPES CRUD ---
   public saveRecipe(recipe: Recipe) {
-    const list = [...this.recipes$.value];
-    if (recipe.id > 0) {
-      const idx = list.findIndex(r => r.id === recipe.id);
-      if (idx !== -1) list[idx] = recipe;
-    } else {
-      recipe.id = list.length > 0 ? Math.max(...list.map(r => r.id)) + 1 : 1;
-      list.push(recipe);
-    }
-    this.recipes$.next(list);
-    this.saveToStorage();
+    this.http.post<any>(`${this.API_URL}/recetas`, recipe).subscribe({
+      next: (res) => {
+        if (res.success) {
+          recipe.id = res.id;
+          if (res.image) {
+            recipe.image = `${environment.URL_BACKEND}${res.image}`;
+          }
+          const list = [...this.recipes$.value];
+          const idx = list.findIndex(r => r.id === recipe.id);
+          if (idx !== -1) {
+            list[idx] = recipe;
+          } else {
+            list.push(recipe);
+          }
+          this.recipes$.next(list);
+        }
+      },
+      error: (e) => {
+        console.error('Error saving recipe:', e);
+        const errMsg = e.error && e.error.message ? e.error.message : 'Error al guardar la receta.';
+        alert(errMsg);
+      }
+    });
   }
 
   public deleteRecipe(id: number) {
-    const list = this.recipes$.value.filter(r => r.id !== id);
-    this.recipes$.next(list);
-    this.saveToStorage();
+    this.http.delete<any>(`${this.API_URL}/recetas?id=${id}`).subscribe({
+      next: (res) => {
+        if (res.success) {
+          const list = this.recipes$.value.filter(r => r.id !== id);
+          this.recipes$.next(list);
+        }
+      },
+      error: (e) => {
+        console.error('Error deleting recipe:', e);
+        const errMsg = e.error && e.error.message ? e.error.message : 'Error al eliminar la receta.';
+        alert(errMsg);
+      }
+    });
   }
 
   // --- CLIENTS CRUD ---
