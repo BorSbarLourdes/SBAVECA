@@ -106,20 +106,35 @@ export class RoleListingComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.stateService.systemPermissions$.value;
   }
 
-  isPermissionSelected(permId: number): boolean {
+  isActionSelected(permId: number, action: string): boolean {
     if (!this.roleModel || !this.roleModel.permissions) return false;
-    return this.roleModel.permissions.some(p => p.id === permId);
+    const perm: any = this.roleModel.permissions.find((p: any) => p.id === permId);
+    if (!perm) return false;
+    if (action === 'read') return !!perm.can_read;
+    if (action === 'create') return !!perm.can_create;
+    if (action === 'update') return !!perm.can_update;
+    if (action === 'delete') return !!perm.can_delete;
+    return false;
   }
 
-  togglePermission(permObj: any) {
+  toggleAction(permObj: any, action: string) {
     if (!this.roleModel.permissions) {
       this.roleModel.permissions = [];
     }
-    const idx = this.roleModel.permissions.findIndex(p => p.id === permObj.id);
-    if (idx !== -1) {
-      this.roleModel.permissions.splice(idx, 1);
-    } else {
-      this.roleModel.permissions.push(permObj);
+    let perm: any = this.roleModel.permissions.find((p: any) => p.id === permObj.id);
+    if (!perm) {
+      perm = { id: permObj.id, name: permObj.name, can_read: false, can_create: false, can_update: false, can_delete: false };
+      this.roleModel.permissions.push(perm);
+    }
+    if (action === 'read') perm.can_read = !perm.can_read;
+    if (action === 'create') perm.can_create = !perm.can_create;
+    if (action === 'update') perm.can_update = !perm.can_update;
+    if (action === 'delete') perm.can_delete = !perm.can_delete;
+    
+    // If all are false, maybe remove it from the list? (optional)
+    if (!perm.can_read && !perm.can_create && !perm.can_update && !perm.can_delete) {
+      const idx = this.roleModel.permissions.findIndex((p: any) => p.id === permObj.id);
+      if (idx !== -1) this.roleModel.permissions.splice(idx, 1);
     }
   }
 

@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { StateService, Client, Order, Recipe } from '../state.service';
+import { AuthService } from '../../modules/auth';
 
 @Component({
   selector: 'app-clientes',
@@ -31,8 +32,14 @@ export class ClientesComponent implements OnInit, OnDestroy {
 
   constructor(
     private stateService: StateService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private authService: AuthService
   ) {}
+
+  hasAction(action: 'read' | 'create' | 'update' | 'delete'): boolean {
+    // El ID 6 corresponde a "Gestión de Clientes"
+    return this.authService.hasAction(6, action);
+  }
 
   ngOnInit(): void {
     const clientsSub = this.stateService.clients$.subscribe((data) => {

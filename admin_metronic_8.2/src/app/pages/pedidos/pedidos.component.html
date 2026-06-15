@@ -11,6 +11,7 @@
         (click)="openNewOrderForm()"
         title="Haga clic para registrar un nuevo pedido o encargo"
         ngbTooltip="Registrar pedido"
+        *ngIf="hasAction('create')"
       >
         <app-keenicon name="plus" class="fs-2 me-1"></app-keenicon> Registrar Nuevo Pedido
       </button>
@@ -33,10 +34,10 @@
               </div>
             </div>
             <div>
-              <button class="btn btn-sm btn-light-warning" (click)="changeStatus(o, 'En preparación')" *ngIf="o.status === 'Pendiente'">
+              <button class="btn btn-sm btn-light-warning" (click)="changeStatus(o, 'En preparación')" *ngIf="o.status === 'Pendiente' && hasAction('update')">
                 Comenzar Producción
               </button>
-              <button class="btn btn-sm btn-warning" (click)="changeStatus(o, 'Listo')" *ngIf="o.status === 'En preparación'">
+              <button class="btn btn-sm btn-warning" (click)="changeStatus(o, 'Listo')" *ngIf="o.status === 'En preparación' && hasAction('update')">
                 Marcar Listo
               </button>
             </div>
@@ -230,7 +231,7 @@
                 <button 
                   class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1" 
                   (click)="changeStatus(o, 'En preparación')" 
-                  *ngIf="o.status === 'Pendiente'"
+                  *ngIf="o.status === 'Pendiente' && hasAction('update')"
                   title="Comenzar preparación (descuenta stock)"
                   ngbTooltip="Comenzar preparación"
                 >
@@ -239,7 +240,7 @@
                 <button 
                   class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1" 
                   (click)="changeStatus(o, 'Listo')" 
-                  *ngIf="o.status === 'En preparación'"
+                  *ngIf="o.status === 'En preparación' && hasAction('update')"
                   title="Marcar como Listo para Entregar"
                   ngbTooltip="Marcar Listo"
                 >
@@ -248,7 +249,7 @@
                 <button 
                   class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1" 
                   (click)="changeStatus(o, 'Entregado')" 
-                  *ngIf="o.status === 'Listo'"
+                  *ngIf="o.status === 'Listo' && hasAction('update')"
                   title="Entregar al Cliente"
                   ngbTooltip="Entregar"
                 >
@@ -261,6 +262,7 @@
                   (click)="editOrder(o)"
                   title="Editar pedido"
                   ngbTooltip="Editar"
+                  *ngIf="hasAction('update')"
                 >
                   <app-keenicon name="pencil" class="fs-4"></app-keenicon>
                 </button>

@@ -336,6 +336,66 @@ export class AuthService implements OnDestroy {
     }
   }
 
+  hasAction(permissionId: number, action: 'read' | 'create' | 'update' | 'delete' = 'read'): boolean {
+    const user = this.currentUserValue;
+    if (!user) return false;
+
+    // Admin (role ID 1) has all permissions
+    if (user.roles && user.roles.includes(1)) {
+      return true;
+    }
+
+    const systemUsers = this.stateService.systemUsers$.value;
+    const foundUser = systemUsers.find(u => u.id === user.id);
+    if (!foundUser) return false;
+
+    const roles = this.stateService.systemRoles$.value;
+    const userRoles = roles.filter(r => foundUser.roleIds.includes(r.id));
+
+    let hasAccess = false;
+    userRoles.forEach(r => {
+      if (r.permissions) {
+        const perm = r.permissions.find((p: any) => p.id === permissionId);
+        if (perm) {
+          if (action === 'read' && perm.can_read) hasAccess = true;
+          if (action === 'create' && perm.can_create) hasAccess = true;
+          if (action === 'update' && perm.can_update) hasAccess = true;
+          if (action === 'delete' && perm.can_delete) hasAccess = true;
+        }
+      }
+    });
+
+    return hasAccess;
+  }
+
+  hasAnyPermission(): boolean {
+    const user = this.currentUserValue;
+    if (!user) return false;
+
+    // Admin (role ID 1) has all permissions
+    if (user.roles && user.roles.includes(1)) {
+      return true;
+    }
+
+    const systemUsers = this.stateService.systemUsers$.value;
+    const foundUser = systemUsers.find(u => u.id === user.id);
+    if (!foundUser) return false;
+
+    const roles = this.stateService.systemRoles$.value;
+    const userRoles = roles.filter(r => foundUser.roleIds.includes(r.id));
+
+    let hasAny = false;
+    userRoles.forEach(r => {
+      if (r.permissions && r.permissions.length > 0) {
+        // Only count if they have at least one 'can_read' action enabled somewhere
+        const hasActivePerm = r.permissions.some((p: any) => p.can_read || p.can_create || p.can_update || p.can_delete);
+        if (hasActivePerm) hasAny = true;
+      }
+    });
+
+    return hasAny;
+  }
+
   ngOnDestroy() {
     this.unsubscribe.forEach((sb) => sb.unsubscribe());
   }

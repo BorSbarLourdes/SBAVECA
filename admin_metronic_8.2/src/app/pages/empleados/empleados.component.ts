@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { StateService, Employee } from '../state.service';
+import { AuthService } from '../../modules/auth';
 
 @Component({
   selector: 'app-empleados',
@@ -27,8 +28,13 @@ export class EmpleadosComponent implements OnInit, OnDestroy {
 
   constructor(
     private stateService: StateService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private authService: AuthService
   ) {}
+
+  hasAction(action: 'read' | 'create' | 'update' | 'delete'): boolean {
+    return this.authService.hasAction(7, action); // 7: Administración
+  }
 
   ngOnInit(): void {
     const sub = this.stateService.employees$.subscribe(data => {

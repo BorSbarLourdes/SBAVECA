@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { StateService, Recipe, Client, Receipt, StockItem } from '../state.service';
+import { AuthService } from '../../modules/auth';
 
 interface CartItem {
   recipeId: number;
@@ -38,7 +39,11 @@ export class VentasComponent implements OnInit {
   // Search receipts history
   searchQueryReceipt = '';
 
-  constructor(private stateService: StateService) {}
+  constructor(private stateService: StateService, private authService: AuthService) {}
+
+  hasAction(action: 'read' | 'create' | 'update' | 'delete'): boolean {
+    return this.authService.hasAction(5, action); // 5: Sistema de Ventas
+  }
 
   ngOnInit(): void {
     this.stateService.recipes$.subscribe(data => {

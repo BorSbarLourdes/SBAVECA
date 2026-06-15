@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { StateService, Order, Recipe, Client } from '../state.service';
+import { AuthService } from '../../modules/auth';
 
 @Component({
   selector: 'app-pedidos',
@@ -28,7 +29,11 @@ export class PedidosComponent implements OnInit {
   formChannel: 'telefónico' | 'presencial' | 'reserva web' = 'presencial';
   formStatus: 'Pendiente' | 'En preparación' | 'Listo' | 'Entregado' | 'Cancelado' = 'Pendiente';
 
-  constructor(private stateService: StateService) {}
+  constructor(private stateService: StateService, private authService: AuthService) {}
+
+  hasAction(action: 'read' | 'create' | 'update' | 'delete'): boolean {
+    return this.authService.hasAction(4, action); // 4: Gestión de Pedidos
+  }
 
   ngOnInit(): void {
     this.stateService.orders$.subscribe(data => {

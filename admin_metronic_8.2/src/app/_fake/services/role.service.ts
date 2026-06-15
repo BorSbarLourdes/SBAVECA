@@ -86,7 +86,7 @@ export class RoleService {
   createRole(role: IRoleModel): Observable<IRoleModel> {
     const body = {
       name: role.name,
-      permissionIds: role.permissions ? role.permissions.map(p => p.id) : []
+      permissions: role.permissions || []
     };
     return this.http.post<any>(`${environment.apiUrl}/roles`, body).pipe(
       tap((res) => {
@@ -110,7 +110,7 @@ export class RoleService {
     const body = {
       id: +id,
       name: role.name,
-      permissionIds: role.permissions ? role.permissions.map(p => p.id) : []
+      permissions: role.permissions || []
     };
     return this.http.post<any>(`${environment.apiUrl}/roles`, body).pipe(
       tap((res) => {

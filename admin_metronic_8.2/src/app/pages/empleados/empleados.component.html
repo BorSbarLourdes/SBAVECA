@@ -4,7 +4,7 @@
       <h3 class="card-label fw-bold text-gray-900">Directorio de Empleados (Recursos Humanos)</h3>
     </div>
     <div class="card-toolbar">
-      <button class="btn btn-primary" (click)="openNew()">
+      <button class="btn btn-primary" (click)="openNew()" *ngIf="hasAction('create')">
         <app-keenicon name="plus" class="fs-2"></app-keenicon> Registrar Colaborador
       </button>
     </div>
@@ -55,13 +55,13 @@
             </td>
             <td class="text-end">
               <div class="d-flex justify-content-end gap-1">
-                <button class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm" (click)="editEmployee(emp)" title="Editar datos del colaborador">
+                <button class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm" (click)="editEmployee(emp)" title="Editar datos del colaborador" *ngIf="hasAction('update')">
                   <app-keenicon name="pencil" class="fs-3"></app-keenicon>
                 </button>
                 <button class="btn btn-icon btn-bg-light btn-active-color-danger btn-sm" 
                         [disabled]="emp.status === 'Inactivo'" 
                         (click)="deleteLogical(emp.id)" 
-                        title="Dar de baja de forma lógica">
+                        title="Dar de baja de forma lógica" *ngIf="hasAction('delete')">
                   <app-keenicon name="trash" class="fs-3"></app-keenicon>
                 </button>
               </div>

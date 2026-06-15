@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { StateService, Recipe, RecipeIngredient, StockItem, compressImage } from '../state.service';
+import { AuthService } from '../../modules/auth';
 
 @Component({
   selector: 'app-recetas',
@@ -24,7 +25,11 @@ export class RecetasComponent implements OnInit {
   tempStockId = 0;
   tempQuantity = 0;
 
-  constructor(private stateService: StateService) {}
+  constructor(private stateService: StateService, private authService: AuthService) {}
+
+  hasAction(action: 'read' | 'create' | 'update' | 'delete'): boolean {
+    return this.authService.hasAction(3, action); // 3: Gestión de Recetas
+  }
 
   ngOnInit(): void {
     this.stateService.recipes$.subscribe(data => {

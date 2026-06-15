@@ -991,9 +991,9 @@ if ($route === '/roles') {
             if (!$role) send_response(['success' => false, 'message' => 'Rol no encontrado'], 404);
             $role['id'] = (int)$role['id'];
 
-            $stmtP = $pdo->prepare("SELECT p.idDashPer as id, p.nombreDashPer as name FROM rol_permiso rp JOIN dashboard_permisos p ON p.idDashPer = rp.idDashPer WHERE rp.idRol = ?");
+            $stmtP = $pdo->prepare("SELECT p.idDashPer as id, p.nombreDashPer as name, rp.puede_ver, rp.puede_crear, rp.puede_modificar, rp.puede_eliminar FROM rol_permiso rp JOIN dashboard_permisos p ON p.idDashPer = rp.idDashPer WHERE rp.idRol = ?");
             $stmtP->execute([$id]);
-            $role['permissions'] = array_map(fn($p) => ['id' => (int)$p['id'], 'name' => $p['name']], $stmtP->fetchAll());
+            $role['permissions'] = array_map(fn($p) => ['id' => (int)$p['id'], 'name' => $p['name'], 'can_read' => (bool)$p['puede_ver'], 'can_create' => (bool)$p['puede_crear'], 'can_update' => (bool)$p['puede_modificar'], 'can_delete' => (bool)$p['puede_eliminar']], $stmtP->fetchAll());
 
             $stmtU = $pdo->prepare("SELECT u.idUsu as id, CONCAT(u.nombreUsu, IF(u.apellidoUsu != '' AND u.apellidoUsu != '-', CONCAT(' ', u.apellidoUsu), '')) as name, u.correoUsu as email FROM usuario_rol ur JOIN usuario u ON u.idUsu = ur.idUsu WHERE ur.idRol = ?");
             $stmtU->execute([$id]);
@@ -1008,9 +1008,9 @@ if ($route === '/roles') {
         foreach ($roles as &$role) {
             $role['id'] = (int)$role['id'];
 
-            $stmtP = $pdo->prepare("SELECT p.idDashPer as id, p.nombreDashPer as name FROM rol_permiso rp JOIN dashboard_permisos p ON p.idDashPer = rp.idDashPer WHERE rp.idRol = ?");
+            $stmtP = $pdo->prepare("SELECT p.idDashPer as id, p.nombreDashPer as name, rp.puede_ver, rp.puede_crear, rp.puede_modificar, rp.puede_eliminar FROM rol_permiso rp JOIN dashboard_permisos p ON p.idDashPer = rp.idDashPer WHERE rp.idRol = ?");
             $stmtP->execute([$role['id']]);
-            $role['permissions'] = array_map(fn($p) => ['id' => (int)$p['id'], 'name' => $p['name']], $stmtP->fetchAll());
+            $role['permissions'] = array_map(fn($p) => ['id' => (int)$p['id'], 'name' => $p['name'], 'can_read' => (bool)$p['puede_ver'], 'can_create' => (bool)$p['puede_crear'], 'can_update' => (bool)$p['puede_modificar'], 'can_delete' => (bool)$p['puede_eliminar']], $stmtP->fetchAll());
 
             $stmtU = $pdo->prepare("SELECT u.idUsu as id, CONCAT(u.nombreUsu, IF(u.apellidoUsu != '' AND u.apellidoUsu != '-', CONCAT(' ', u.apellidoUsu), '')) as name, u.correoUsu as email FROM usuario_rol ur JOIN usuario u ON u.idUsu = ur.idUsu WHERE ur.idRol = ?");
             $stmtU->execute([$role['id']]);
@@ -1023,7 +1023,7 @@ if ($route === '/roles') {
         $input      = json_decode(file_get_contents('php://input'), true);
         $id         = isset($input['id']) ? (int)$input['id'] : 0;
         $name       = trim($input['name'] ?? '');
-        $permIds    = array_map('intval', $input['permissionIds'] ?? array_map(fn($p) => $p['id'] ?? 0, $input['permissions'] ?? []));
+        $permissions = $input['permissions'] ?? [];
 
         if (empty($name)) send_response(['success' => false, 'message' => 'El nombre es obligatorio'], 400);
 
@@ -1039,9 +1039,29 @@ if ($route === '/roles') {
             }
             // Sync permissions
             $pdo->prepare("DELETE FROM rol_permiso WHERE idRol = ?")->execute([$id]);
-            $stmtRP = $pdo->prepare("INSERT IGNORE INTO rol_permiso (idRol, idDashPer) VALUES (?, ?)");
-            foreach ($permIds as $pid) {
-                if ($pid > 0) $stmtRP->execute([$id, $pid]);
+            $stmtRP = $pdo->prepare("INSERT IGNORE INTO rol_permiso (idRol, idDashPer, puede_ver, puede_crear, puede_modificar, puede_eliminar) VALUES (?, ?, ?, ?, ?, ?)");
+            foreach ($permissions as $p) {
+                $pid = (int)($p['id'] ?? 0);
+                if ($pid > 0) {
+                    $canRead = !empty($p['can_read']) ? 1 : 0;
+                    $canCreate = !empty($p['can_create']) ? 1 : 0;
+                    $canUpdate = !empty($p['can_update']) ? 1 : 0;
+                    $canDelete = !empty($p['can_delete']) ? 1 : 0;
+                    // Always fallback to true if passing old permissionIds format (backward compatibility)
+                    if (isset($p['can_read']) === false) {
+                        $canRead = $canCreate = $canUpdate = $canDelete = 1;
+                    }
+                    $stmtRP->execute([$id, $pid, $canRead, $canCreate, $canUpdate, $canDelete]);
+                }
+            }
+            // Backward compatibility for permissionIds format
+            if (empty($permissions) && !empty($input['permissionIds'])) {
+                foreach ($input['permissionIds'] as $pid) {
+                    $pid = (int)$pid;
+                    if ($pid > 0) {
+                        $stmtRP->execute([$id, $pid, 1, 1, 1, 1]);
+                    }
+                }
             }
             $pdo->commit();
             send_response(['success' => true, 'id' => $id]);

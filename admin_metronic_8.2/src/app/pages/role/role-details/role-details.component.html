@@ -87,20 +87,20 @@
         <div class="d-flex flex-column scroll-y me-n7 pe-7 mw-650px" id="kt_modal_update_customer_scroll" data-kt-scroll="true" data-kt-scroll-activate="{default: false, lg: true}" data-kt-scroll-max-height="auto" data-kt-scroll-dependencies="#kt_modal_update_customer_header" data-kt-scroll-wrappers="#kt_modal_update_customer_scroll"
           data-kt-scroll-offset="300px">
           <!--begin::User toggle-->
-          <div class="fw-bold fs-3 rotate collapsible mb-7">Role Details</div>
+          <div class="fw-bold fs-3 rotate collapsible mb-7">Detalles del Rol</div>
           <!--end::User toggle-->
           <!--begin::User form-->
           <div class="collapse show">
             <!--begin::Input group-->
             <div class="fv-row mb-7">
               <!--begin::Label-->
-              <label class="required fw-semibold fs-6 mb-2">Role Name</label>
+              <label class="required fw-semibold fs-6 mb-2">Nombre del Rol</label>
               <!--end::Label-->
               <!--begin::Input-->
               <input type="text" class="form-control form-control-solid" name="name" [(ngModel)]="roleModel.name" #name="ngModel" required minlength="4" />
               <div *ngIf="myForm.submitted && myForm.invalid" class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback">
-                <div *ngIf="name.errors?.['required']">Role name is required</div>
-                <div *ngIf="name.errors?.['minlength']">Role name must be at least 4 characters long</div>
+                <div *ngIf="name.errors?.['required']">El nombre del rol es obligatorio</div>
+                <div *ngIf="name.errors?.['minlength']">El nombre del rol debe tener al menos 4 caracteres</div>
               </div>
               <!--end::Input-->
             </div>
@@ -108,21 +108,39 @@
 
             <!--begin::Permissions group-->
             <div class="mb-7">
-              <label class="required fw-semibold fs-6 mb-5">Permissions</label>
-              <div class="row row-cols-1 row-cols-sm-2">
-                <div class="col" *ngFor="let perm of permissions">
-                  <div class="form-check form-check-custom form-check-solid mb-4">
-                    <input class="form-check-input me-3" 
-                           id="kt_modal_role_perm_{{ perm.id }}" 
-                           name="perm_{{ perm.id }}" 
-                           type="checkbox" 
-                           [checked]="isPermissionSelected(perm.id)"
-                           (change)="togglePermission(perm)" />
-                    <label class="form-check-label" for="kt_modal_role_perm_{{ perm.id }}">
-                      <span class="fw-bold text-gray-800">{{ perm.name }}</span>
-                    </label>
-                  </div>
-                </div>
+              <label class="required fw-semibold fs-6 mb-5">Permisos</label>
+              <div class="table-responsive">
+                <table class="table align-middle table-row-dashed fs-6 gy-5">
+                  <tbody class="text-gray-800 fw-bold">
+                    <tr *ngFor="let perm of permissions">
+                      <td class="text-dark fs-5">{{ perm.name }}</td>
+                      <td>
+                        <div class="d-flex">
+                          <!-- Ver -->
+                          <label class="form-check form-check-custom me-5 me-lg-20">
+                            <input class="form-check-input" type="checkbox" [checked]="isActionSelected(perm.id, 'read')" (change)="toggleAction(perm, 'read')" />
+                            <span class="form-check-label text-gray-800">Ver</span>
+                          </label>
+                          <!-- Crear -->
+                          <label class="form-check form-check-custom me-5 me-lg-20">
+                            <input class="form-check-input" type="checkbox" [checked]="isActionSelected(perm.id, 'create')" (change)="toggleAction(perm, 'create')" />
+                            <span class="form-check-label text-gray-800">Crear</span>
+                          </label>
+                          <!-- Modificar -->
+                          <label class="form-check form-check-custom me-5 me-lg-20">
+                            <input class="form-check-input" type="checkbox" [checked]="isActionSelected(perm.id, 'update')" (change)="toggleAction(perm, 'update')" />
+                            <span class="form-check-label text-gray-800">Modificar</span>
+                          </label>
+                          <!-- Eliminar -->
+                          <label class="form-check form-check-custom">
+                            <input class="form-check-input" type="checkbox" [checked]="isActionSelected(perm.id, 'delete')" (change)="toggleAction(perm, 'delete')" />
+                            <span class="form-check-label text-gray-800">Eliminar</span>
+                          </label>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
             <!--end::Permissions group-->
@@ -133,17 +151,17 @@
       <div class="modal-footer flex-center">
         <!--begin::Button-->
         <button type="reset" class="btn btn-light me-3" (click)="modal.dismiss('cancel')">
-          Discard
+          Cancelar
         </button>
         <!--end::Button-->
   
         <!--begin::Button-->
         <button type="submit" class="btn btn-primary" [attr.data-kt-indicator]="isLoading ? 'on' : 'off'">
           <span class="indicator-label">
-            Submit
+            Guardar
           </span>
           <span class="indicator-progress">
-            Please wait... <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+            Por favor espere... <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
           </span>
         </button>
         <!--end::Button-->

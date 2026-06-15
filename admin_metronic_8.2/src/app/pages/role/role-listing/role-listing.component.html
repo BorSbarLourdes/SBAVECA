@@ -114,20 +114,38 @@
             <!--begin::Permissions group-->
             <div class="mb-7">
               <label class="required fw-semibold fs-6 mb-5">Permisos</label>
-              <div class="row row-cols-1 row-cols-sm-2">
-                <div class="col" *ngFor="let perm of permissions">
-                  <div class="form-check form-check-custom form-check-solid mb-4">
-                    <input class="form-check-input me-3" 
-                           id="kt_modal_role_perm_{{ perm.id }}" 
-                           name="perm_{{ perm.id }}" 
-                           type="checkbox" 
-                           [checked]="isPermissionSelected(perm.id)"
-                           (change)="togglePermission(perm)" />
-                    <label class="form-check-label" for="kt_modal_role_perm_{{ perm.id }}">
-                      <span class="fw-bold text-gray-800">{{ perm.name }}</span>
-                    </label>
-                  </div>
-                </div>
+              <div class="table-responsive">
+                <table class="table align-middle table-row-dashed fs-6 gy-5">
+                  <tbody class="text-gray-800 fw-bold">
+                    <tr *ngFor="let perm of permissions">
+                      <td class="text-dark fs-5">{{ perm.name }}</td>
+                      <td>
+                        <div class="d-flex">
+                          <!-- Ver -->
+                          <label class="form-check form-check-custom me-5 me-lg-20">
+                            <input class="form-check-input" type="checkbox" [checked]="isActionSelected(perm.id, 'read')" (change)="toggleAction(perm, 'read')" />
+                            <span class="form-check-label text-gray-800">Ver</span>
+                          </label>
+                          <!-- Crear -->
+                          <label class="form-check form-check-custom me-5 me-lg-20">
+                            <input class="form-check-input" type="checkbox" [checked]="isActionSelected(perm.id, 'create')" (change)="toggleAction(perm, 'create')" />
+                            <span class="form-check-label text-gray-800">Crear</span>
+                          </label>
+                          <!-- Modificar -->
+                          <label class="form-check form-check-custom me-5 me-lg-20">
+                            <input class="form-check-input" type="checkbox" [checked]="isActionSelected(perm.id, 'update')" (change)="toggleAction(perm, 'update')" />
+                            <span class="form-check-label text-gray-800">Modificar</span>
+                          </label>
+                          <!-- Eliminar -->
+                          <label class="form-check form-check-custom">
+                            <input class="form-check-input" type="checkbox" [checked]="isActionSelected(perm.id, 'delete')" (change)="toggleAction(perm, 'delete')" />
+                            <span class="form-check-label text-gray-800">Eliminar</span>
+                          </label>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
             <!--end::Permissions group-->

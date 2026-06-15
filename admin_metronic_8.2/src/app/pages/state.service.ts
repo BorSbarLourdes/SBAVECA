@@ -150,6 +150,7 @@ export class StateService {
         const mappedRoles = list.map((r: any) => ({
           id: r.id,
           name: r.name,
+          permissions: r.permissions || [],
           permissionIds: r.permissions ? r.permissions.map((p: any) => p.id) : []
         }));
         this.systemRoles$.next(mappedRoles);

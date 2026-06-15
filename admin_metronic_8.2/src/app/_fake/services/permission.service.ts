@@ -15,6 +15,10 @@ export interface DataTablesResponse {
 export interface IPermissionModel {
   id: number;
   name: string;
+  can_read?: boolean;
+  can_create?: boolean;
+  can_update?: boolean;
+  can_delete?: boolean;
   created_at?: string;
   updated_at?: string;
 }

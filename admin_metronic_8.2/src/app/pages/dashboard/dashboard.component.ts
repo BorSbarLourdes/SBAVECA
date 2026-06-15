@@ -30,6 +30,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return this.authService.currentUserValue?.fullname || 'Usuario';
   }
 
+  get hasAnyPermission(): boolean {
+    return this.authService.hasAnyPermission();
+  }
+
+  get hasDashboardPermission(): boolean {
+    return this.authService.hasAction(1, 'read');
+  }
+
   ngOnInit(): void {
     // 1. Sales
     const receiptsSub = this.stateService.receipts$.subscribe(data => {

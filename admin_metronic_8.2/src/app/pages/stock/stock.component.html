@@ -16,7 +16,7 @@
         <h3 class="card-label">Existencias en Inventario (Stock)</h3>
       </div>
       <div class="card-toolbar">
-        <button class="btn btn-primary" (click)="openNewItem()">
+        <button class="btn btn-primary" (click)="openNewItem()" *ngIf="hasAction('create')">
           <app-keenicon name="plus" class="fs-2"></app-keenicon> Nuevo Insumo
         </button>
       </div>
@@ -78,10 +78,10 @@
                 </span>
               </td>
               <td class="text-end">
-                <button class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1" (click)="editItem(item)">
+                <button class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1" (click)="editItem(item)" *ngIf="hasAction('update')">
                   <app-keenicon name="pencil" class="fs-3"></app-keenicon>
                 </button>
-                <button class="btn btn-icon btn-bg-light btn-active-color-danger btn-sm" (click)="deleteItem(item.id)">
+                <button class="btn btn-icon btn-bg-light btn-active-color-danger btn-sm" (click)="deleteItem(item.id)" *ngIf="hasAction('delete')">
                   <app-keenicon name="trash" class="fs-3"></app-keenicon>
                 </button>
               </td>
@@ -99,7 +99,7 @@
         <h3 class="card-label">Proveedores de Cocina</h3>
       </div>
       <div class="card-toolbar">
-        <button class="btn btn-primary" (click)="openNewSupplier()">
+        <button class="btn btn-primary" (click)="openNewSupplier()" *ngIf="hasAction('create')">
           <app-keenicon name="plus" class="fs-2"></app-keenicon> Nuevo Proveedor
         </button>
       </div>
@@ -139,10 +139,10 @@
                 </div>
               </td>
               <td class="text-end">
-                <button class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1" (click)="editSupplier(sup)">
+                <button class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1" (click)="editSupplier(sup)" *ngIf="hasAction('update')">
                   <app-keenicon name="pencil" class="fs-3"></app-keenicon>
                 </button>
-                <button class="btn btn-icon btn-bg-light btn-active-color-danger btn-sm" (click)="deleteSupplier(sup.id)">
+                <button class="btn btn-icon btn-bg-light btn-active-color-danger btn-sm" (click)="deleteSupplier(sup.id)" *ngIf="hasAction('delete')">
                   <app-keenicon name="trash" class="fs-3"></app-keenicon>
                 </button>
               </td>

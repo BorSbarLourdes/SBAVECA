@@ -56,9 +56,9 @@
               </div>
               
               <div class="col-md-2">
-                <button class="btn btn-primary w-100" (click)="addToCart()" title="Añadir producto seleccionado al carrito de cobros">
-                  <app-keenicon name="plus" class="fs-4 me-1"></app-keenicon> Añadir
-                </button>
+                  <button class="btn btn-primary w-100" (click)="addToCart()" title="Añadir producto seleccionado al carrito de cobros" *ngIf="hasAction('create')">
+                    <app-keenicon name="plus" class="fs-4 me-1"></app-keenicon> Añadir
+                  </button>
               </div>
             </div>
           </div>
@@ -132,6 +132,7 @@
                 [disabled]="cart.length === 0"
                 title="Haga clic para registrar la venta y generar la factura/recibo correspondiente"
                 ngbTooltip="Finalizar venta"
+                *ngIf="hasAction('create')"
               >
                 <app-keenicon name="check" class="fs-3 me-1"></app-keenicon> Cobrar y Generar Recibo
               </button>
