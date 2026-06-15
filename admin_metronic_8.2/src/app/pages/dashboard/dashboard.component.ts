@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { StateService, Order, StockItem, Receipt, Client } from '../state.service';
+import { AuthService } from '../../modules/auth/services/auth.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -21,8 +22,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   constructor(
     private stateService: StateService,
+    private authService: AuthService,
     private cdr: ChangeDetectorRef
   ) {}
+
+  get currentUserFullname(): string {
+    return this.authService.currentUserValue?.fullname || 'Usuario';
+  }
 
   ngOnInit(): void {
     // 1. Sales

@@ -1,66 +1,51 @@
+<!-- Styles moved to global styles.scss -->
+
 <div
-  class="d-flex flex-column bgi-no-repeat rounded-top"
-  [style.background-image]="'url(./assets/media/misc/menu-header-bg.jpg)'"
+  class="d-flex flex-column rounded-top px-9 pt-10 pb-6"
+  style="background-color: #4D2C18 !important;"
 >
-  <h3 class="text-white fw-bold px-9 mt-10 mb-6">
-    Notifications <span class="fs-8 opacity-75 ps-3">24 reports</span>
+  <h3 class="text-white fw-bold m-0 mb-6" style="font-family: 'Playfair Display', Georgia, serif;">
+    Notificaciones <span class="fs-8 opacity-75 ps-3" style="font-family: 'Inter', sans-serif;">Gestión de Negocio</span>
   </h3>
 
-  <ul class="nav nav-line-tabs nav-line-tabs-2x nav-stretch fw-bold px-9">
+  <ul class="nav nav-line-tabs nav-line-tabs-2x nav-stretch fw-bold px-0">
     <li class ="nav-item">
       <a
-        class="
-          nav-link
-          text-white
-          opacity-75 opacity-state-100
-          pb-4
-          cursor-pointer
-        "
+        class="nav-link text-white opacity-75 opacity-state-100 pb-4 cursor-pointer"
         data-bs-toggle="tab"
         [ngClass]="activeTabId === 'kt_topbar_notifications_1' ? 'active' : ''"
         (click)="setActiveTabId('kt_topbar_notifications_1')"
       >
-        Alerts
+        Alertas
       </a>
     </li>
 
     <li class="nav-item">
       <a
-        class="
-          nav-link
-          text-white
-          opacity-75 opacity-state-100
-          pb-4
-          cursor-pointer
-        "
+        class="nav-link text-white opacity-75 opacity-state-100 pb-4 cursor-pointer"
         data-bs-toggle="tab"
         [ngClass]="activeTabId === 'kt_topbar_notifications_2' ? 'active' : ''"
         (click)="setActiveTabId('kt_topbar_notifications_2')"
       >
-        Updates
+        SBAVECA
       </a>
     </li>
 
     <li class="nav-item">
       <a
-        class="
-          nav-link
-          text-white
-          opacity-75 opacity-state-100
-          pb-4
-          cursor-pointer
-        "
+        class="nav-link text-white opacity-75 opacity-state-100 pb-4 cursor-pointer"
         data-bs-toggle="tab"
         [ngClass]="activeTabId === 'kt_topbar_notifications_3' ? 'active' : ''"
         (click)="setActiveTabId('kt_topbar_notifications_3')"
       >
-        Logs
+        Historial
       </a>
     </li>
   </ul>
 </div>
 
 <div class="tab-content">
+  <!-- Tab 1: Alertas -->
   <div
     class="tab-pane fade"
     id="kt_topbar_notifications_1"
@@ -81,7 +66,7 @@
           </div>
 
           <div class="mb-0 me-2">
-            <a href="#" class="fs-6 text-gray-800 text-hover-primary fw-bolder">
+            <a routerLink="/dashboard" class="fs-6 text-gray-800 text-hover-primary fw-bolder text-decoration-none">
               {{ alert.title }}
             </a>
             <div class="text-gray-500 fs-7">{{ alert.description }}</div>
@@ -94,15 +79,17 @@
 
     <div class="py-3 text-center border-top">
       <a
-        routerLink="/crafted/pages/profile"
-        class="btn btn-color-gray-600 btn-active-color-primary"
+        routerLink="/dashboard"
+        class="fw-bold text-hover-primary"
+        style="color: #4D2C18 !important; text-decoration: none;"
       >
-        View All
-        <app-keenicon name="arrow-right" class="fs-5"></app-keenicon>
+        Ver Todo
+        <app-keenicon name="arrow-right" class="fs-5" style="color: #4D2C18 !important;"></app-keenicon>
       </a>
     </div>
   </div>
 
+  <!-- Tab 2: SBAVECA -->
   <div
     class="tab-pane fade"
     id="kt_topbar_notifications_2"
@@ -111,34 +98,33 @@
   >
     <div class="d-flex flex-column px-9">
       <div class="pt-10 pb-0">
-        <h3 class="text-gray-900 text-center fw-bolder">Get Pro Access</h3>
+        <h3 class="text-gray-900 text-center fw-bolder" style="font-family: 'Playfair Display', serif;">SBAVECA Gastronomía</h3>
 
-        <div class="text-center text-gray-600 fw-bold pt-1">
-          Outlines keep you honest. They stoping you from amazing poorly about
-          drive
+        <div class="text-center text-gray-600 fw-bold pt-1" style="font-family: 'Inter', sans-serif;">
+          Accedé de forma rápida al panel de ventas o administrá tus insumos activos.
         </div>
 
         <div class="text-center mt-5 mb-9">
           <a
+            routerLink="/ventas"
             class="btn btn-sm btn-primary px-6 cursor-pointer"
-            data-bs-toggle="modal"
-            data-bs-target="#kt_modal_upgrade_plan"
           >
-            Upgrade
+            Ir a Ventas
           </a>
         </div>
       </div>
 
-      <div class="text-center px-4">
+      <div class="text-center px-4 mb-8">
         <img
-          class="mw-100 mh-200px"
-          alt="metronic"
-          src="./assets/media/illustrations/sketchy-1/1.png"
+          class="mw-100 mh-100px"
+          alt="SBAVECA"
+          src="./assets/media/sbavecaLogo.png"
         />
       </div>
     </div>
   </div>
 
+  <!-- Tab 3: Historial -->
   <div
     class="tab-pane fade"
     id="kt_topbar_notifications_3"
@@ -147,29 +133,32 @@
   >
     <div class="scroll-y mh-325px my-5 px-8">
       <div *ngFor="let log of logs" class="d-flex flex-stack py-4">
-        <div class="d-flex align-items-center me-2">
+        <div class="d-flex align-items-center flex-grow-1 me-2">
           <span
-            class="w-70px badge"
-            [ngClass]="'badge-light-' + log.state + ' me-4'"
+            class="w-70px badge flex-shrink-0 me-4"
+            [ngClass]="'badge-light-' + log.state"
           >
             {{ log.code }}
           </span>
 
-          <a class="text-gray-800 text-hover-primary fw-bold cursor-pointer">
-            {{ log.message }}
-          </a>
-
-          <span class="badge badge-light fs-8">{{ log.time }}</span>
+          <div class="mb-0 flex-grow-1">
+            <a class="text-gray-800 text-hover-primary fw-bold cursor-pointer text-decoration-none">
+              {{ log.message }}
+            </a>
+          </div>
         </div>
+
+        <span class="badge badge-light fs-8 flex-shrink-0 ms-2">{{ log.time }}</span>
       </div>
     </div>
     <div class="py-3 text-center border-top">
       <a
-        routerLink="/crafted/pages/profile"
-        class="btn btn-color-gray-600 btn-active-color-primary"
+        routerLink="/dashboard"
+        class="fw-bold text-hover-primary"
+        style="color: #4D2C18 !important; text-decoration: none;"
       >
-        View All
-        <app-keenicon name="arrow-right" class="fs-5"></app-keenicon>
+        Ver Todo
+        <app-keenicon name="arrow-right" class="fs-5" style="color: #4D2C18 !important;"></app-keenicon>
       </a>
     </div>
   </div>

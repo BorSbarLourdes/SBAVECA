@@ -1,63 +1,121 @@
+<!-- Greeting Header -->
+<div class="d-flex flex-stack flex-wrap gap-4 mb-8">
+  <div class="d-flex flex-column">
+    <h1 class="text-dark fw-bolder fs-2x mb-1" style="font-family: 'Playfair Display', Georgia, serif; color: #4D2C18 !important;">Bienvenido de nuevo, {{ currentUserFullname }}.</h1>
+    <div class="text-gray-500 fw-semibold fs-6" style="font-family: 'Inter', sans-serif;">Esto es lo que está sucediendo en SBAVECA hoy.</div>
+  </div>
+  <!-- System Status Badge -->
+  <div class="d-flex align-items-center gap-2 bg-white px-4 py-2 border border-gray-300 rounded-pill shadow-xs">
+    <span class="bullet bullet-dot bg-success h-8px w-8px animate-pulse"></span>
+    <span class="fs-8 fw-bold text-gray-700">Estado del Sistema</span>
+    <span class="badge badge-light-success fs-9 px-2">Activo</span>
+  </div>
+</div>
+
+<!-- Quick Actions Row -->
+<div class="row g-5 g-xl-10 mb-8">
+  <!-- Action: New Order -->
+  <div class="col-md-4">
+    <a routerLink="/ventas" class="card hover-elevate-up shadow-sm border-0 h-100 min-h-100px d-flex flex-row align-items-center p-6 text-decoration-none" style="background-color: #4D2C18 !important; border-radius: 12px;">
+      <div class="d-flex align-items-center gap-4">
+        <div class="symbol symbol-40px bg-white bg-opacity-10 d-flex align-items-center justify-content-center" style="width: 45px; height: 45px; border-radius: 10px;">
+          <app-keenicon name="plus" class="fs-1 text-white"></app-keenicon>
+        </div>
+        <div class="d-flex flex-column">
+          <span class="fs-5 fw-bold text-white" style="font-family: 'Inter', sans-serif;">Nueva Venta</span>
+          <span class="fs-8 text-white text-opacity-70">Terminal de cobro inmediato</span>
+        </div>
+      </div>
+    </a>
+  </div>
+  <!-- Action: Add Stock -->
+  <div class="col-md-4">
+    <a routerLink="/stock" class="card hover-elevate-up shadow-sm h-100 min-h-100px d-flex flex-row align-items-center p-6 text-decoration-none" style="background-color: #FAF5EB !important; border: 1px dashed rgba(77, 44, 24, 0.2) !important; border-radius: 12px;">
+      <div class="d-flex align-items-center gap-4">
+        <div class="symbol symbol-40px bg-dark bg-opacity-5 d-flex align-items-center justify-content-center" style="width: 45px; height: 45px; border-radius: 10px;">
+          <app-keenicon name="category" class="fs-1" style="color: #4D2C18 !important;"></app-keenicon>
+        </div>
+        <div class="d-flex flex-column">
+          <span class="fs-5 fw-bold" style="font-family: 'Inter', sans-serif; color: #4D2C18 !important;">Control de Stock</span>
+          <span class="fs-8 text-gray-500">Ingresar o ajustar insumos</span>
+        </div>
+      </div>
+    </a>
+  </div>
+  <!-- Action: New Recipe -->
+  <div class="col-md-4">
+    <a routerLink="/recetas" class="card hover-elevate-up shadow-sm h-100 min-h-100px d-flex flex-row align-items-center p-6 text-decoration-none" style="background-color: #FAF5EB !important; border: 1px dashed rgba(77, 44, 24, 0.2) !important; border-radius: 12px;">
+      <div class="d-flex align-items-center gap-4">
+        <div class="symbol symbol-40px bg-dark bg-opacity-5 d-flex align-items-center justify-content-center" style="width: 45px; height: 45px; border-radius: 10px;">
+          <app-keenicon name="scroll" class="fs-1" style="color: #4D2C18 !important;"></app-keenicon>
+        </div>
+        <div class="d-flex flex-column">
+          <span class="fs-5 fw-bold" style="font-family: 'Inter', sans-serif; color: #4D2C18 !important;">Nueva Receta</span>
+          <span class="fs-8 text-gray-500">Añadir plato al recetario</span>
+        </div>
+      </div>
+    </a>
+  </div>
+</div>
+
 <!-- Metrics row -->
 <div class="row g-5 g-xl-10 mb-8">
   <!-- Card: Today's Revenue -->
   <div class="col-md-6 col-xl-3">
-    <div class="card card-flush bg-light-success h-md-100 p-6 border border-success border-dashed">
+    <div class="card card-flush h-md-100 p-6" style="background-color: #FAF5EB !important; border: 1px solid rgba(77, 44, 24, 0.08) !important;">
       <div class="card-header p-0 pb-4 border-0 min-h-auto">
-        <span class="fs-6 fw-bold text-gray-700">Ventas Registradas Hoy</span>
+        <span class="fs-6 fw-bold text-gray-700">Ventas de Hoy</span>
       </div>
       <div class="card-body p-0 d-flex flex-column justify-content-end">
-        <span class="fs-2hx text-success fw-bold leading-none mb-2">{{ todaySales | currency:'USD':'symbol':'1.2-2' }}</span>
-        <span class="fs-8 text-gray-600">Calculado en tiempo real según comprobantes</span>
+        <span class="fs-2hx fw-bold leading-none mb-2" style="color: #4D2C18 !important;">{{ todaySales | currency:'USD':'symbol':'1.2-2' }}</span>
+        <span class="fs-8 text-gray-600">Calculado en tiempo real</span>
       </div>
     </div>
   </div>
 
   <!-- Card: Urgent Orders -->
   <div class="col-md-6 col-xl-3">
-    <div class="card card-flush h-md-100 p-6 border border-dashed"
-         [ngClass]="urgentOrdersCount > 0 ? 'bg-light-danger border-danger animate-pulse' : 'bg-light-primary border-primary'">
+    <div class="card card-flush h-md-100 p-6"
+         [ngStyle]="{'background-color': urgentOrdersCount > 0 ? '#FFE9E9' : '#FAF5EB', 'border': urgentOrdersCount > 0 ? '1px solid #F8285A' : '1px solid rgba(77, 44, 24, 0.08)'}">
       <div class="card-header p-0 pb-4 border-0 min-h-auto">
         <span class="fs-6 fw-bold text-gray-700">Pedidos Urgentes (<24h)</span>
       </div>
       <div class="card-body p-0 d-flex flex-column justify-content-end">
-        <span class="fs-2hx fw-bold leading-none mb-2"
-              [ngClass]="urgentOrdersCount > 0 ? 'text-danger' : 'text-primary'">
+        <span class="fs-2hx fw-bold leading-none mb-2" [ngClass]="urgentOrdersCount > 0 ? 'text-danger' : 'text-dark'" [ngStyle]="{'color': urgentOrdersCount > 0 ? '' : '#4D2C18 !important'}">
           {{ urgentOrdersCount }}
         </span>
-        <span class="fs-8 text-gray-600" *ngIf="urgentOrdersCount > 0">¡Requiere atención en cocina!</span>
-        <span class="fs-8 text-gray-600" *ngIf="urgentOrdersCount === 0">Sin demoras ni urgencias</span>
+        <span class="fs-8 text-danger fw-semibold" *ngIf="urgentOrdersCount > 0">¡Atención en cocina!</span>
+        <span class="fs-8 text-gray-600" *ngIf="urgentOrdersCount === 0">Sin demoras</span>
       </div>
     </div>
   </div>
 
   <!-- Card: Low Stock Warnings -->
   <div class="col-md-6 col-xl-3">
-    <div class="card card-flush h-md-100 p-6 border border-dashed"
-         [ngClass]="lowStockItems.length > 0 ? 'bg-light-warning border-warning' : 'bg-light-info border-info'">
+    <div class="card card-flush h-md-100 p-6"
+         [ngStyle]="{'background-color': lowStockItems.length > 0 ? '#FFF4E5' : '#FAF5EB', 'border': lowStockItems.length > 0 ? '1px solid #E65A28' : '1px solid rgba(77, 44, 24, 0.08)'}">
       <div class="card-header p-0 pb-4 border-0 min-h-auto">
-        <span class="fs-6 fw-bold text-gray-700">Insumos bajo mínimo</span>
+        <span class="fs-6 fw-bold text-gray-700">Insumos Bajo Mínimo</span>
       </div>
       <div class="card-body p-0 d-flex flex-column justify-content-end">
-        <span class="fs-2hx fw-bold leading-none mb-2"
-              [ngClass]="lowStockItems.length > 0 ? 'text-warning' : 'text-info'">
+        <span class="fs-2hx fw-bold leading-none mb-2" [ngStyle]="{'color': lowStockItems.length > 0 ? '#E65A28' : '#4D2C18'}">
           {{ lowStockItems.length }}
         </span>
-        <span class="fs-8 text-gray-600" *ngIf="lowStockItems.length > 0">Se recomienda reponer stock</span>
-        <span class="fs-8 text-gray-600" *ngIf="lowStockItems.length === 0">Todo el inventario suficiente</span>
+        <span class="fs-8 text-warning fw-semibold" *ngIf="lowStockItems.length > 0">Reponer stock sugerido</span>
+        <span class="fs-8 text-gray-600" *ngIf="lowStockItems.length === 0">Stock suficiente</span>
       </div>
     </div>
   </div>
 
   <!-- Card: Loyalty Stats -->
   <div class="col-md-6 col-xl-3">
-    <div class="card card-flush bg-light p-6 border border-gray-300 border-dashed h-md-100">
+    <div class="card card-flush h-md-100 p-6" style="background-color: #FAF5EB !important; border: 1px solid rgba(77, 44, 24, 0.08) !important;">
       <div class="card-header p-0 pb-4 border-0 min-h-auto">
-        <span class="fs-6 fw-bold text-gray-700">Clientes VIP y Fidelizados</span>
+        <span class="fs-6 fw-bold text-gray-700">Clientes VIP Activos</span>
       </div>
       <div class="card-body p-0 d-flex flex-column justify-content-end">
-        <span class="fs-2hx text-gray-800 fw-bold leading-none mb-2">{{ vipClientsCount }}</span>
-        <span class="fs-8 text-gray-600">Total puntos acumulados: {{ totalLoyaltyPoints }} pts</span>
+        <span class="fs-2hx fw-bold leading-none mb-2" style="color: #4D2C18 !important;">{{ vipClientsCount }}</span>
+        <span class="fs-8 text-gray-600">Total acumulado: {{ totalLoyaltyPoints }} pts</span>
       </div>
     </div>
   </div>
@@ -67,14 +125,14 @@
 <div class="row g-6 mb-8">
   <!-- Left Column: Low Stock Table -->
   <div class="col-lg-6">
-    <div class="card border border-dashed border-gray-300 h-100">
+    <div class="card h-100">
       <div class="card-header pt-5 border-0">
         <h3 class="card-title align-items-start flex-column">
           <span class="card-label fw-bold text-dark fs-5">Alertas de Inventario Bajo</span>
           <span class="text-muted mt-1 fw-semibold fs-7">{{ lowStockItems.length }} artículos por debajo de la alerta</span>
         </h3>
         <div class="card-toolbar">
-          <a routerLink="/stock" class="btn btn-sm btn-light-warning">Ir al Stock</a>
+          <a routerLink="/stock" class="btn btn-sm btn-light-primary">Ir al Stock</a>
         </div>
       </div>
       <div class="card-body pt-2">
@@ -110,7 +168,7 @@
 
   <!-- Right Column: Urgent Orders -->
   <div class="col-lg-6">
-    <div class="card border border-dashed border-gray-300 h-100">
+    <div class="card h-100">
       <div class="card-header pt-5 border-0">
         <h3 class="card-title align-items-start flex-column">
           <span class="card-label fw-bold text-dark fs-5">Cola de Pedidos Próximos</span>
@@ -156,7 +214,7 @@
 </div>
 
 <!-- Recent Receipts -->
-<div class="card border border-dashed border-gray-300 mb-8">
+<div class="card mb-8">
   <div class="card-header pt-5 border-0">
     <h3 class="card-title align-items-start flex-column">
       <span class="card-label fw-bold text-dark fs-5">Últimas Transacciones Registradas</span>

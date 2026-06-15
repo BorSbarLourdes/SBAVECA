@@ -21,8 +21,9 @@
     <!--end::sidebar mobile toggle-->
     <!--begin::Mobile logo-->
     <div class="d-flex align-items-center flex-grow-1 flex-lg-grow-0">
-      <a routerLink="/dashboard" class="d-lg-none">
-        <img alt="Logo" src="./assets/media/logos/default-small.svg" class="h-30px" />
+      <a routerLink="/dashboard" class="d-lg-none d-flex align-items-center gap-2 text-decoration-none">
+        <img src="./assets/media/sbavecaLogo.png" alt="SBAVECA Logo" class="h-25px" />
+        <span class="fs-4 fw-bold" style="font-family: 'Playfair Display', Georgia, serif; color: #FAF5EB !important; letter-spacing: 0.5px;">SBAVECA</span>
       </a>
     </div>
     <!--end::Mobile logo-->
@@ -31,54 +32,19 @@
   <ng-container *ngIf="!appSidebarDisplay">
     <!--begin::Logo-->
     <div class="d-flex align-items-center flex-grow-1 flex-lg-grow-0 me-lg-15">
-      <a routerLink="/dashboard">
-        <ng-container *ngIf="currentLayoutType === 'dark-header'">
-          <img alt="Logo" src="./assets/media/logos/default-dark.svg"
-            class="h-20px h-lg-30px app-sidebar-logo-default" />
-        </ng-container>
-        <ng-container *ngIf="currentLayoutType !== 'dark-header'">
-          <img alt="Logo" src="./assets/media/logos/default.svg"
-            class="h-20px h-lg-30px app-sidebar-logo-default theme-light-show" />
-          <img alt="Logo" src="./assets/media/logos/default-dark.svg"
-            class="h-20px h-lg-30px app-sidebar-logo-default theme-dark-show" />
-        </ng-container>
+      <a routerLink="/dashboard" class="d-flex align-items-center gap-3 text-decoration-none">
+        <img src="./assets/media/sbavecaLogo.png" alt="SBAVECA Logo" class="h-35px" />
+        <div class="d-flex flex-column">
+          <span class="fs-4 fw-bolder" style="font-family: 'Playfair Display', Georgia, serif; color: #FAF5EB !important; letter-spacing: 0.5px; line-height: 1.2;">SBAVECA</span>
+          <span class="text-uppercase fw-semibold" style="font-family: 'Inter', sans-serif; font-size: 0.55rem; color: rgba(250, 245, 235, 0.75) !important; margin-top: -2px;">Gestión de Negocio</span>
+        </div>
       </a>
     </div>
     <!--end::Logo-->
   </ng-container>
 
   <!--begin::Header wrapper-->
-  <div class="d-flex align-items-stretch justify-content-between flex-lg-grow-1" id="kt_app_header_wrapper">
-    <ng-container *ngIf="appHeaderDefaultContent === 'menu' && appHeaderDefaulMenuDisplay">
-      <!--begin::Menu wrapper-->
-      <div class="
-    app-header-menu
-    app-header-mobile-drawer
-    align-items-stretch
-" data-kt-drawer="true" data-kt-drawer-name="app-header-menu" data-kt-drawer-activate="{default: true, lg: false}"
-        data-kt-drawer-overlay="true" data-kt-drawer-width="225px" data-kt-drawer-direction="end"
-        data-kt-drawer-toggle="#kt_app_header_menu_toggle" data-kt-swapper="true"
-        data-kt-swapper-mode="{default: 'append', lg: 'prepend'}"
-        data-kt-swapper-parent="{default: '#kt_app_body', lg: '#kt_app_header_wrapper'}">
-        <!--begin::Menu-->
-        <app-header-menu class="
-        menu
-        menu-rounded
-        menu-column
-        menu-lg-row
-        my-5
-        my-lg-0
-        align-items-stretch
-        fw-semibold
-        px-2 px-lg-0
-    " id="kt_app_header_menu" data-kt-menu="true"></app-header-menu>
-        <!--end::Menu-->
-      </div>
-      <!--end::Menu wrapper-->
-    </ng-container>
-    <!-- <ng-container *ngIf="appHeaderDefaultContent === 'page-title' && appPageTitleDisplay">
-      <app-page-title #ktPageTitle class="page-title d-flex"></app-page-title>
-    </ng-container> -->
+  <div class="d-flex align-items-stretch justify-content-end flex-lg-grow-1" id="kt_app_header_wrapper">
     <app-navbar class="app-navbar flex-shrink-0" [appHeaderDefaulMenuDisplay]="appHeaderDefaulMenuDisplay"
       [isRtl]="false"></app-navbar>
   </div>

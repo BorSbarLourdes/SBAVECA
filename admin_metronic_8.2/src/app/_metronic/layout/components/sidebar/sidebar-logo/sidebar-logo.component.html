@@ -1,15 +1,17 @@
 <!--begin::Logo image-->
-<a routerLink="/dashboard">
-  <ng-container *ngIf="currentLayoutType === 'dark-sidebar'">
-    <img alt="Logo" src="./assets/media/logos/default-dark.svg" class="h-25px app-sidebar-logo-default" />
-  </ng-container>
-  <ng-container *ngIf="currentLayoutType !== 'dark-sidebar'">
-    <img alt="Logo" src="./assets/media/logos/default.svg" class="h-25px app-sidebar-logo-default theme-light-show" />
-    <img alt="Logo" src="./assets/media/logos/default-dark.svg"
-      class="h-25px app-sidebar-logo-default theme-dark-show" />
-  </ng-container>
-
-  <img alt="Logo" src="./assets/media/logos/default-small.svg" class="h-20px app-sidebar-logo-minimize" />
+<a routerLink="/dashboard" class="d-flex align-items-center text-decoration-none">
+  <!-- Default logo state -->
+  <div class="app-sidebar-logo-default d-flex align-items-center gap-3">
+    <img src="./assets/media/sbavecaLogo.png" alt="SBAVECA Logo" class="h-35px" />
+    <div class="d-flex flex-column">
+      <span class="fs-4 fw-bolder" style="font-family: 'Playfair Display', Georgia, serif; color: #4D2C18 !important; letter-spacing: 0.5px; line-height: 1.2;">SBAVECA</span>
+      <span class="text-uppercase fw-semibold" style="font-family: 'Inter', sans-serif; font-size: 0.55rem; color: #8C7060 !important; margin-top: -2px;">Gestión de Negocio</span>
+    </div>
+  </div>
+  <!-- Minimize logo state -->
+  <div class="app-sidebar-logo-minimize">
+    <img src="./assets/media/sbavecaLogo.png" alt="SBAVECA Logo" class="h-30px" />
+  </div>
 </a>
 <!--end::Logo image-->
 
