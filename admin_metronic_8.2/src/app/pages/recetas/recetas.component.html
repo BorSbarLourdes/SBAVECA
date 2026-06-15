@@ -30,9 +30,9 @@
             <td>
               <div class="d-flex align-items-center">
                 <!-- Thumbnail preview -->
-                <div class="symbol symbol-40px me-3 border overflow-hidden bg-light">
-                  <img *ngIf="r.image" [src]="r.image" alt="Receta" style="object-fit: cover; width:100%; height:100%;" />
-                  <span *ngIf="!r.image" class="symbol-label bg-light-primary text-primary fw-bold fs-6">{{ r.name.charAt(0) }}</span>
+                <div class="symbol symbol-40px me-3 border overflow-hidden bg-light" style="width: 40px; height: 40px;">
+                  <img *ngIf="r.image" [src]="r.image" (error)="r.image = undefined" alt="Receta" style="object-fit: cover; width: 100%; height: 100%;" />
+                  <span *ngIf="!r.image" class="symbol-label bg-light-primary text-primary fw-bold fs-6" style="width: 40px; height: 40px;">{{ r.name.charAt(0) }}</span>
                 </div>
                 <span class="text-gray-900 fw-bold fs-6">{{ r.name }}</span>
               </div>
@@ -74,9 +74,9 @@
             <div class="row g-4">
               <!-- Image uploader and preview row -->
               <div class="col-12 d-flex align-items-center gap-4 mb-2">
-                <div class="symbol symbol-70px border overflow-hidden bg-light">
-                  <img *ngIf="formImage" [src]="formImage" alt="Vista previa" style="object-fit: cover; width:100%; height:100%;" />
-                  <span *ngIf="!formImage" class="symbol-label bg-light-secondary text-gray-500 fs-1">📷</span>
+                <div class="symbol symbol-70px border overflow-hidden bg-light" style="width: 70px; height: 70px;">
+                  <img *ngIf="formImage" [src]="formImage" (error)="formImage = ''" alt="Vista previa" style="object-fit: cover; width: 100%; height: 100%;" />
+                  <span *ngIf="!formImage" class="symbol-label bg-light-secondary text-gray-500 fs-1" style="width: 70px; height: 70px;">📷</span>
                 </div>
                 <div>
                   <label class="form-label d-block text-gray-800 fw-bold">Foto de la Receta / Producto</label>

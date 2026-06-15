@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { StateService, Recipe, RecipeIngredient, StockItem } from '../state.service';
+import { StateService, Recipe, RecipeIngredient, StockItem, compressImage } from '../state.service';
 
 @Component({
   selector: 'app-recetas',
@@ -97,7 +97,10 @@ export class RecetasComponent implements OnInit {
     if (file) {
       const reader = new FileReader();
       reader.onload = (e: any) => {
-        this.formImage = e.target.result;
+        const base64 = e.target.result;
+        compressImage(base64).then((compressed: string) => {
+          this.formImage = compressed;
+        });
       };
       reader.readAsDataURL(file);
     }

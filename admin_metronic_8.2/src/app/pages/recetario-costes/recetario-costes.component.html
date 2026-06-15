@@ -63,7 +63,7 @@
           <div class="card-body pt-3">
             <!-- Recipe Image Banner -->
             <div class="mb-6 rounded overflow-hidden border bg-light d-flex justify-content-center align-items-center" style="max-height: 220px;" *ngIf="selectedRecipe.image">
-              <img [src]="selectedRecipe.image" alt="Foto Receta" style="width: 100%; height: 220px; object-fit: cover;" />
+              <img [src]="selectedRecipe.image" (error)="selectedRecipe.image = undefined" alt="Foto Receta" style="width: 100%; height: 220px; object-fit: cover;" />
             </div>
 
             <h5 class="fw-bold text-gray-800 mb-4">Ingredientes y Costo de Producción</h5>

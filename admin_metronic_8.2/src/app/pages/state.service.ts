@@ -134,6 +134,26 @@ export class StateService {
     if (dataStr) {
       try {
         const parsed = JSON.parse(dataStr);
+        
+        // Clean up broken default image paths if they exist in local storage
+        let cleaned = false;
+        if (parsed.stock) {
+          parsed.stock.forEach((item: any) => {
+            if (item.image && item.image.startsWith('./assets/media/stock/')) {
+              delete item.image;
+              cleaned = true;
+            }
+          });
+        }
+        if (parsed.recipes) {
+          parsed.recipes.forEach((item: any) => {
+            if (item.image && item.image.startsWith('./assets/media/stock/')) {
+              delete item.image;
+              cleaned = true;
+            }
+          });
+        }
+
         this.employees$.next(parsed.employees || []);
         this.suppliers$.next(parsed.suppliers || []);
         this.stock$.next(parsed.stock || []);
@@ -148,6 +168,10 @@ export class StateService {
         this.systemUsers$.next(parsed.systemUsers || []);
         this.systemRoles$.next(parsed.systemRoles || []);
         this.systemPermissions$.next(parsed.systemPermissions || []);
+
+        if (cleaned) {
+          this.saveToStorage();
+        }
         return;
       } catch (e) {
         console.error('Error parsing stored data, resetting...', e);
@@ -161,10 +185,10 @@ export class StateService {
     ];
 
     const defaultStock: StockItem[] = [
-      { id: 1, name: 'Harina de Trigo 000', category: 'ingrediente', quantity: 150, minThreshold: 20, unit: 'kg', costPrice: 450, supplierId: 1, image: './assets/media/stock/harina.jpg' },
-      { id: 2, name: 'Manteca', category: 'ingrediente', quantity: 8, minThreshold: 5, unit: 'kg', costPrice: 3200, supplierId: 1, image: './assets/media/stock/manteca.jpg' },
-      { id: 3, name: 'Levadura Seca', category: 'ingrediente', quantity: 12, minThreshold: 2, unit: 'kg', costPrice: 1500, supplierId: 2, image: './assets/media/stock/levadura.jpg' },
-      { id: 4, name: 'Azúcar Común', category: 'ingrediente', quantity: 45, minThreshold: 10, unit: 'kg', costPrice: 600, supplierId: 2, image: './assets/media/stock/azucar.jpg' },
+      { id: 1, name: 'Harina de Trigo 000', category: 'ingrediente', quantity: 150, minThreshold: 20, unit: 'kg', costPrice: 450, supplierId: 1 },
+      { id: 2, name: 'Manteca', category: 'ingrediente', quantity: 8, minThreshold: 5, unit: 'kg', costPrice: 3200, supplierId: 1 },
+      { id: 3, name: 'Levadura Seca', category: 'ingrediente', quantity: 12, minThreshold: 2, unit: 'kg', costPrice: 1500, supplierId: 2 },
+      { id: 4, name: 'Azúcar Común', category: 'ingrediente', quantity: 45, minThreshold: 10, unit: 'kg', costPrice: 600, supplierId: 2 },
       { id: 5, name: 'Rodillo Profesional', category: 'utensilio', quantity: 3, minThreshold: 1, unit: 'unidades', costPrice: 12000, supplierId: 1 }
     ];
 
@@ -274,21 +298,25 @@ export class StateService {
   }
 
   private saveToStorage() {
-    const data = {
-      employees: this.employees$.value,
-      suppliers: this.suppliers$.value,
-      stock: this.stock$.value,
-      recipes: this.recipes$.value,
-      clients: this.clients$.value,
-      orders: this.orders$.value,
-      transactions: this.transactions$.value,
-      receipts: this.receipts$.value,
-      menu: this.menu$.value,
-      systemUsers: this.systemUsers$.value,
-      systemRoles: this.systemRoles$.value,
-      systemPermissions: this.systemPermissions$.value,
-    };
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data));
+    try {
+      const data = {
+        employees: this.employees$.value,
+        suppliers: this.suppliers$.value,
+        stock: this.stock$.value,
+        recipes: this.recipes$.value,
+        clients: this.clients$.value,
+        orders: this.orders$.value,
+        transactions: this.transactions$.value,
+        receipts: this.receipts$.value,
+        menu: this.menu$.value,
+        systemUsers: this.systemUsers$.value,
+        systemRoles: this.systemRoles$.value,
+        systemPermissions: this.systemPermissions$.value,
+      };
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data));
+    } catch (e) {
+      console.error('Error saving data to localStorage (quota exceeded?):', e);
+    }
   }
 
   // --- SYSTEM USERS CRUD ---
@@ -559,4 +587,44 @@ export class StateService {
     this.stock$.next(list);
     this.saveToStorage();
   }
+}
+
+export function compressImage(base64Str: string, maxWidth = 300, maxHeight = 300): Promise<string> {
+  return new Promise((resolve) => {
+    if (!base64Str || !base64Str.startsWith('data:image')) {
+      resolve(base64Str);
+      return;
+    }
+    const img = new Image();
+    img.src = base64Str;
+    img.onload = () => {
+      let width = img.width;
+      let height = img.height;
+      if (width > height) {
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+      } else {
+        if (height > maxHeight) {
+          width = Math.round((width * maxHeight) / height);
+          height = maxHeight;
+        }
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', 0.7));
+      } else {
+        resolve(base64Str);
+      }
+    };
+    img.onerror = () => {
+      resolve(base64Str);
+    };
+  });
 }

@@ -47,9 +47,9 @@
                         [ngClass]="item.quantity < item.minThreshold ? 'bg-danger' : 'bg-success'"></span>
                   
                   <!-- Thumbnail preview -->
-                  <div class="symbol symbol-40px me-3 border overflow-hidden bg-light">
-                    <img *ngIf="item.image" [src]="item.image" alt="Foto Insumo" style="object-fit: cover; width:100%; height:100%;" />
-                    <span *ngIf="!item.image" class="symbol-label bg-light-primary text-primary fw-bold fs-6">{{ item.name.charAt(0) }}</span>
+                  <div class="symbol symbol-40px me-3 border overflow-hidden bg-light" style="width: 40px; height: 40px;">
+                    <img *ngIf="item.image" [src]="item.image" (error)="item.image = undefined" alt="Foto Insumo" style="object-fit: cover; width: 100%; height: 100%;" />
+                    <span *ngIf="!item.image" class="symbol-label bg-light-primary text-primary fw-bold fs-6" style="width: 40px; height: 40px;">{{ item.name.charAt(0) }}</span>
                   </div>
 
                   <span class="text-gray-900 fw-bold fs-6">{{ item.name }}</span>
@@ -166,9 +166,9 @@
         <div class="row g-4">
           <!-- Image upload and preview row -->
           <div class="col-12 d-flex align-items-center gap-4 mb-2">
-            <div class="symbol symbol-70px border overflow-hidden bg-light">
-              <img *ngIf="itemImage" [src]="itemImage" alt="Vista previa" style="object-fit: cover; width:100%; height:100%;" />
-              <span *ngIf="!itemImage" class="symbol-label bg-light-secondary text-gray-500 fs-1">📷</span>
+            <div class="symbol symbol-70px border overflow-hidden bg-light" style="width: 70px; height: 70px;">
+              <img *ngIf="itemImage" [src]="itemImage" (error)="itemImage = ''" alt="Vista previa" style="object-fit: cover; width: 100%; height: 100%;" />
+              <span *ngIf="!itemImage" class="symbol-label bg-light-secondary text-gray-500 fs-1" style="width: 70px; height: 70px;">📷</span>
             </div>
             <div>
               <label class="form-label d-block text-gray-800 fw-bold">Foto del Insumo / Producto</label>

@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { StateService, StockItem, Supplier } from '../state.service';
+import { StateService, StockItem, Supplier, compressImage } from '../state.service';
 
 @Component({
   selector: 'app-stock',
@@ -96,7 +96,11 @@ export class StockComponent implements OnInit, OnDestroy {
     if (file) {
       const reader = new FileReader();
       reader.onload = (e: any) => {
-        this.itemImage = e.target.result;
+        const base64 = e.target.result;
+        compressImage(base64).then((compressed: string) => {
+          this.itemImage = compressed;
+          this.cdr.detectChanges();
+        });
       };
       reader.readAsDataURL(file);
     }
