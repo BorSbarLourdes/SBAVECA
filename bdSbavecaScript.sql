@@ -1268,7 +1268,7 @@ END$$
 -- RF13.3: 1 punto por cada $100 al marcar venta como 'Pagado'
 -- (el divisor 100 puede ajustarse según la regla de negocio)
 -- -------------------------------------------------------------
-DROP TRIGGER IF EXISTS `mybd`.`trg_acumular_puntos_venta`$$
+DROP TRIGGER IF EXISTS `sbaveca`.`trg_acumular_puntos_venta`$$
 CREATE
 DEFINER=`root`@`localhost`
 TRIGGER `sbaveca`.`trg_acumular_puntos_venta`
@@ -1285,7 +1285,7 @@ BEGIN
             SET `puntosAcumCli` = `puntosAcumCli` + puntos_ganados
             WHERE `idCli` = NEW.clienteIdVen;
 
-            INSERT INTO `mybd`.`transaccion_puntos`
+            INSERT INTO `sbaveca`.`transaccion_puntos`
               (`clienteIdTransPuntos`, `puntosTrans`, `motivoTrans`,
                `ventaIdTransPuntos`, `observacionTrans`)
             VALUES
