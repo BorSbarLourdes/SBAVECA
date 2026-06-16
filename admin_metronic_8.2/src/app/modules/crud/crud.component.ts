@@ -115,6 +115,12 @@ export class CrudComponent implements OnInit, AfterViewInit, OnDestroy {
       const closestBtn = event.target.closest('.btn');
       if (closestBtn) {
         const { action, id } = closestBtn.dataset;
+
+        // Solo procesar si el botón tiene un data-action definido.
+        // Esto evita que los botones del SweetAlert2 (que también tienen clase .btn)
+        // pisen el valor de idInAction antes de que triggerDelete() lo use.
+        if (!action) return;
+
         this.idInAction = id;
 
         switch (action) {
@@ -133,11 +139,7 @@ export class CrudComponent implements OnInit, AfterViewInit, OnDestroy {
             break;
 
           case 'delete':
-            this.deleteSwal.fire().then((clicked) => {
-              if (clicked.isConfirmed) {
-                this.successSwal.fire();
-              }
-            });
+            this.deleteSwal.fire();
             break;
         }
       }

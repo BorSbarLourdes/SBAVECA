@@ -424,10 +424,22 @@ if ($route === '/auth/me' && $method === 'GET') {
                     $roles = [3]; // Default to Cliente
                 }
 
+                $firstname = $user['nombreUsu'];
+                $lastname = $user['apellidoUsu'];
+                if (($lastname === '-' || empty($lastname)) && strpos($firstname, ' ') !== false) {
+                    $parts = explode(' ', $firstname);
+                    $firstname = $parts[0];
+                    $lastname = implode(' ', array_slice($parts, 1));
+                } else if ($lastname === '-') {
+                    $lastname = '';
+                }
+
                 send_response([
                     "id" => (int)$user['idUsu'],
                     "username" => $user['usuarioUsu'] ?? explode('@', $user['correoUsu'])[0],
-                    "fullname" => $user['nombreUsu'] . ' ' . $user['apellidoUsu'],
+                    "fullname" => trim($firstname . ' ' . $lastname),
+                    "firstname" => $firstname,
+                    "lastname" => $lastname,
                     "email" => $user['correoUsu'],
                     "phone" => $user['telefonoUsu'],
                     "roles" => $roles,
@@ -1177,7 +1189,7 @@ if ($route === '/usuarios') {
                 direccionUsu as address
              FROM usuario
              WHERE (nombreUsu LIKE ? OR correoUsu LIKE ? OR apellidoUsu LIKE ?)" . $roleCondition . "
-             ORDER BY idUsu ASC
+             ORDER BY FIELD(estadoUsu, 'Activo', 'Inactivo'), idUsu ASC
              LIMIT ?, ?"
         );
         $stmt->execute(array_merge([$search, $search, $search], $roleParams, [$start, $length]));

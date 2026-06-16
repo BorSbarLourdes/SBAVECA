@@ -40,7 +40,8 @@
                     <!--begin::Card footer-->
                     <div class="card-footer flex-wrap pt-0">
                         <a [routerLink]="['/apps/roles', role.id]" class="btn btn-light btn-active-primary my-1 me-2">Ver Rol</a>
-                        <button type="button" class="btn btn-light btn-active-light-primary my-1" [attr.data-id]="role.id" data-action="edit">Editar Rol</button>
+                        <button type="button" class="btn btn-light btn-active-light-primary my-1 me-2" [attr.data-id]="role.id" data-action="edit">Editar Rol</button>
+                        <button type="button" class="btn btn-light btn-active-light-danger my-1" [attr.data-id]="role.id" data-action="delete">Eliminar</button>
                     </div>
                     <!--end::Card footer-->
                 </div>
@@ -75,7 +76,18 @@
 </div>
 
 
-<swal #noticeSwal [swalOptions]="swalOptions">
+<swal #noticeSwal [swalOptions]="swalOptions"></swal>
+
+<swal #deleteSwal
+  title="¿Eliminar este rol?"
+  text="Esta acción no se puede deshacer. Los usuarios con este rol quedarán sin rol asignado."
+  icon="warning"
+  [showCancelButton]="true"
+  confirmButtonText="Sí, eliminar"
+  cancelButtonText="Cancelar"
+  [focusCancel]="true"
+  [customClass]="{confirmButton: 'btn btn-danger me-3', cancelButton: 'btn btn-active-light'}"
+  (confirm)="confirmDelete()">
 </swal>
 
 <ng-template #formModal let-modal>

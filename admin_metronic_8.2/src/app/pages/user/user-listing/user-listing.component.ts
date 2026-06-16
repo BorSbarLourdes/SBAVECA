@@ -127,8 +127,18 @@ export class UserListingComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   delete(id: number) {
-    this.apiService.deleteUser(id).subscribe(() => {
-      this.reloadEvent.emit(true);
+    this.apiService.deleteUser(id).subscribe({
+      next: () => {
+        this.reloadEvent.emit(true);
+      },
+      error: (err) => {
+        console.error('Error al eliminar usuario:', err);
+        this.showAlert({
+          icon: 'error',
+          title: 'Error',
+          text: err?.error?.message || 'No se pudo eliminar el usuario.'
+        });
+      }
     });
   }
 

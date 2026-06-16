@@ -33,6 +33,11 @@ export class RoleListingComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('noticeSwal')
   noticeSwal!: SwalComponent;
 
+  @ViewChild('deleteSwal')
+  deleteSwal!: SwalComponent;
+
+  private pendingDeleteId: any = null;
+
   swalOptions: SweetAlertOptions = {};
 
   modalConfig: NgbModalOptions = {
@@ -55,6 +60,8 @@ export class RoleListingComponent implements OnInit, AfterViewInit, OnDestroy {
       if (closestBtn) {
         const { action, id } = closestBtn.dataset;
 
+        if (!action) return;
+
         switch (action) {
           case 'view':
             break;
@@ -70,7 +77,8 @@ export class RoleListingComponent implements OnInit, AfterViewInit, OnDestroy {
             break;
 
           case 'delete':
-            this.delete(id);
+            this.pendingDeleteId = id;
+            this.deleteSwal.fire();
             break;
         }
       }
@@ -82,9 +90,26 @@ export class RoleListingComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   delete(id: number) {
-    this.apiService.deleteRole(id).subscribe(() => {
-      this.roles$ = this.apiService.getRoles();
-      this.cdr.detectChanges();
+    this.pendingDeleteId = id;
+    this.deleteSwal.fire();
+  }
+
+  confirmDelete() {
+    if (!this.pendingDeleteId) return;
+    this.apiService.deleteRole(this.pendingDeleteId).subscribe({
+      next: () => {
+        this.pendingDeleteId = null;
+        this.roles$ = this.apiService.getRoles();
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.pendingDeleteId = null;
+        this.showAlert({
+          icon: 'error',
+          title: 'No se pudo eliminar',
+          text: err?.error?.message || 'Error al eliminar el rol.'
+        });
+      }
     });
   }
 

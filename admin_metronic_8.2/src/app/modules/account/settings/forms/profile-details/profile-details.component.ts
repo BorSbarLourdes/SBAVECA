@@ -3,6 +3,7 @@ import { BehaviorSubject, Subscription } from 'rxjs';
 import { AuthService } from 'src/app/modules/auth';
 import { StateService } from 'src/app/pages/state.service';
 import { ToastrService } from 'ngx-toastr';
+import { UserService } from 'src/app/_fake/services/user-service';
 
 @Component({
   selector: 'app-profile-details',
@@ -26,7 +27,8 @@ export class ProfileDetailsComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private auth: AuthService,
     private stateService: StateService,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private userService: UserService
   ) {
     const loadingSubscr = this.isLoading$
       .asObservable()
@@ -51,33 +53,55 @@ export class ProfileDetailsComponent implements OnInit, OnDestroy {
   saveSettings() {
     this.isLoading$.next(true);
 
-    setTimeout(() => {
-      const systemUsers = this.stateService.systemUsers$.value;
-      const foundUser = systemUsers.find(u => u.id === this.userId);
-      if (foundUser) {
-        foundUser.name = `${this.firstname} ${this.lastname}`.trim();
-        foundUser.firstname = this.firstname;
-        foundUser.lastname = this.lastname;
-        foundUser.username = this.username;
-        foundUser.email = this.email;
-        foundUser.phone = this.phone;
-        this.stateService.saveSystemUser(foundUser);
-
-        // Update current auth session
-        const updatedUser = { ...this.auth.currentUserValue };
-        updatedUser.fullname = foundUser.name;
-        updatedUser.firstname = this.firstname;
-        updatedUser.lastname = this.lastname;
-        updatedUser.username = this.username;
-        updatedUser.email = this.email;
-        updatedUser.phone = this.phone;
-        this.auth.currentUserValue = updatedUser as any;
-      }
-
+    const currentUser = this.auth.currentUserValue;
+    if (!currentUser) {
       this.isLoading$.next(false);
-      this.toastr.success('Detalles del perfil actualizados correctamente.', 'Éxito');
-      this.cdr.detectChanges();
-    }, 1000);
+      return;
+    }
+
+    const updatedUserPayload: any = {
+      name: `${this.firstname} ${this.lastname}`.trim(),
+      email: this.email,
+      username: this.username,
+      phone: this.phone,
+      roles: (currentUser.roles || []).map(roleId => ({ id: roleId })),
+      status: 'Activo'
+    };
+
+    this.userService.updateUser(this.userId, updatedUserPayload).subscribe({
+      next: (res) => {
+        const systemUsers = this.stateService.systemUsers$.value;
+        const foundUser = systemUsers.find(u => u.id === this.userId);
+        if (foundUser) {
+          foundUser.name = updatedUserPayload.name;
+          foundUser.firstname = this.firstname;
+          foundUser.lastname = this.lastname;
+          foundUser.username = this.username;
+          foundUser.email = this.email;
+          foundUser.phone = this.phone;
+          this.stateService.saveSystemUser(foundUser);
+        }
+
+        const updatedAuthUser = { ...currentUser };
+        updatedAuthUser.fullname = updatedUserPayload.name;
+        updatedAuthUser.firstname = this.firstname;
+        updatedAuthUser.lastname = this.lastname;
+        updatedAuthUser.username = this.username;
+        updatedAuthUser.email = this.email;
+        updatedAuthUser.phone = this.phone;
+        this.auth.currentUserValue = updatedAuthUser as any;
+
+        this.isLoading$.next(false);
+        this.toastr.success('Detalles del perfil actualizados correctamente.', 'Éxito');
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.isLoading$.next(false);
+        const errMsg = err?.error?.message || 'Error al actualizar los detalles del perfil.';
+        this.toastr.error(errMsg, 'Error');
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   ngOnDestroy() {

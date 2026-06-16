@@ -267,6 +267,11 @@ export class AuthService implements OnDestroy {
     return this.authHttpService.getUserByToken(auth.authToken).pipe(
       map((user: UserType) => {
         if (user) {
+          if (user.fullname && (!user.firstname || !user.lastname)) {
+            const parts = user.fullname.trim().split(/\s+/);
+            if (!user.firstname) user.firstname = parts[0] || '';
+            if (!user.lastname) user.lastname = parts.slice(1).join(' ') || '';
+          }
           this.currentUserSubject.next(user);
         } else {
           this.logout();
