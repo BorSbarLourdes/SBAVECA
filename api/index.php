@@ -207,43 +207,51 @@ if ($route === '/auth/login' && $method === 'POST') {
     $stmt->execute([$email, $email, $email]);
     $user = $stmt->fetch();
 
-    if ($user && (password_verify($password, $user['contrasenaUsu']) || $password === $user['contrasenaUsu'])) {
-        // Check if user has dashboard access (not just Cliente)
-        $hasAccess = false;
-        try {
-            $stmtRoles = $pdo->prepare("SELECT r.idRol FROM usuario_rol ur JOIN roles r ON r.idRol = ur.idRol WHERE ur.idUsu = ? AND r.idRol IN (1, 2)");
-            $stmtRoles->execute([$user['idUsu']]);
-            $hasAccess = $stmtRoles->fetch();
-        } catch (Exception $e) {
-            // Table may not exist yet
+    if ($user) {
+        if (strcasecmp($user['estadoUsu'], 'Inactivo') === 0) {
+            send_response(["success" => false, "message" => "Tu cuenta está desactivada. Tienes acceso denegado al sistema.", "error_type" => "no_permission"], 403);
         }
 
-        // Also check by rolUsu column as fallback
-        if (!$hasAccess && !empty($user['rolUsu'])) {
+        if (password_verify($password, $user['contrasenaUsu']) || $password === $user['contrasenaUsu']) {
+            // Check if user has dashboard access (not just Cliente)
+            $hasAccess = false;
             try {
-                $stmtRL = $pdo->prepare("SELECT idRol FROM roles WHERE nombreRol = ? AND idRol IN (1, 2)");
-                $stmtRL->execute([$user['rolUsu']]);
-                $hasAccess = $stmtRL->fetch();
+                $stmtRoles = $pdo->prepare("SELECT r.idRol FROM usuario_rol ur JOIN roles r ON r.idRol = ur.idRol WHERE ur.idUsu = ? AND r.idRol IN (1, 2)");
+                $stmtRoles->execute([$user['idUsu']]);
+                $hasAccess = $stmtRoles->fetch();
             } catch (Exception $e) {
-                // roles table may not exist; grant access if rolUsu is admin/empleado
-                if (in_array($user['rolUsu'], ['Administrador', 'Admin', 'Empleado'])) {
-                    $hasAccess = true;
+                // Table may not exist yet
+            }
+
+            // Also check by rolUsu column as fallback
+            if (!$hasAccess && !empty($user['rolUsu'])) {
+                try {
+                    $stmtRL = $pdo->prepare("SELECT idRol FROM roles WHERE nombreRol = ? AND idRol IN (1, 2)");
+                    $stmtRL->execute([$user['rolUsu']]);
+                    $hasAccess = $stmtRL->fetch();
+                } catch (Exception $e) {
+                    // roles table may not exist; grant access if rolUsu is admin/empleado
+                    if (in_array($user['rolUsu'], ['Administrador', 'Admin', 'Empleado'])) {
+                        $hasAccess = true;
+                    }
                 }
             }
-        }
 
-        if (!$hasAccess) {
-            send_response(["success" => false, "message" => "Acceso denegado", "error_type" => "no_permission"], 403);
-        }
+            if (!$hasAccess) {
+                send_response(["success" => false, "message" => "Acceso denegado", "error_type" => "no_permission"], 403);
+            }
 
-        // Generate JWT token
-        $token = generate_token($user['idUsu']);
-        
-        send_response([
-            "authToken" => $token,
-            "refreshToken" => $token, // simplify for frontend
-            "expiresIn" => date('c', time() + 3600 * 24)
-        ]);
+            // Generate JWT token
+            $token = generate_token($user['idUsu']);
+
+            send_response([
+                "authToken" => $token,
+                "refreshToken" => $token, // simplify for frontend
+                "expiresIn" => date('c', time() + 3600 * 24)
+            ]);
+        } else {
+            send_response(["success" => false, "message" => "El email y/o la contrasena son incorrectos"], 401);
+        }
     } else {
         send_response(["success" => false, "message" => "El email y/o la contrasena son incorrectos"], 401);
     }
@@ -332,6 +340,10 @@ if ($route === '/auth/google' && $method === 'POST') {
         }
     }
 
+    if ($user && strcasecmp($user['estadoUsu'], 'Inactivo') === 0) {
+        send_response(["success" => false, "message" => "Tu cuenta está desactivada. Tienes acceso denegado al sistema.", "error_type" => "no_permission"], 403);
+    }
+
     // Check if user has dashboard access (not just Cliente)
     $hasAccess = false;
     try {
@@ -385,6 +397,10 @@ if ($route === '/auth/me' && $method === 'GET') {
             $user = $stmt->fetch();
             
             if ($user) {
+                if (strcasecmp($user['estadoUsu'], 'Inactivo') === 0) {
+                    send_response(["success" => false, "message" => "Cuenta desactivada"], 403);
+                }
+                
                 // Get additional info from persona
                 $stmtPers = $pdo->prepare("SELECT * FROM persona WHERE idUsuarioPers = ?");
                 $stmtPers->execute([$userId]);
@@ -869,6 +885,25 @@ try {
                 $pdo->exec("INSERT IGNORE INTO rol_permiso (idRol, idDashPer) VALUES (1, $hasHistorial)");
             }
         }
+    }
+    
+    // Dynamic migration block: Check and insert 'Modificar Mi Perfil' if not exists, and assign to admin
+    $hasPerfilPerm = $pdo->query("SELECT idDashPer FROM dashboard_permisos WHERE nombreDashPer = 'Modificar Mi Perfil'")->fetchColumn();
+    if (!$hasPerfilPerm) {
+        $pdo->exec("INSERT INTO dashboard_permisos (nombreDashPer) VALUES ('Modificar Mi Perfil')");
+        $hasPerfilPerm = $pdo->lastInsertId();
+    }
+    if ($hasPerfilPerm) {
+        $adminRoleExists = $pdo->query("SELECT COUNT(*) FROM roles WHERE idRol = 1")->fetchColumn();
+        if ($adminRoleExists) {
+            $hasRel = $pdo->query("SELECT COUNT(*) FROM rol_permiso WHERE idRol = 1 AND idDashPer = $hasPerfilPerm")->fetchColumn();
+            if (!$hasRel) {
+                $pdo->exec("INSERT IGNORE INTO rol_permiso (idRol, idDashPer) VALUES (1, $hasPerfilPerm)");
+            }
+        }
+    }
+
+    if ($hasHistorial) {
         // Empleado role (id 2)
         $empleadoRoleExists = $pdo->query("SELECT COUNT(*) FROM roles WHERE idRol = 2")->fetchColumn();
         if ($empleadoRoleExists) {
@@ -1098,7 +1133,7 @@ if ($route === '/usuarios') {
         $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
         if ($id > 0) {
-            $stmt = $pdo->prepare("SELECT idUsu as id, CONCAT(nombreUsu, IF(apellidoUsu != '' AND apellidoUsu != '-', CONCAT(' ', apellidoUsu), '')) as name, correoUsu as email, estadoUsu as status, rolUsu as role_str, telefonoUsu as phone FROM usuario WHERE idUsu = ?");
+            $stmt = $pdo->prepare("SELECT idUsu as id, CONCAT(nombreUsu, IF(apellidoUsu != '' AND apellidoUsu != '-', CONCAT(' ', apellidoUsu), '')) as name, correoUsu as email, estadoUsu as status, rolUsu as role_str, telefonoUsu as phone, usuarioUsu as username, fechaNacUsu as dob, direccionUsu as address FROM usuario WHERE idUsu = ?");
             $stmt->execute([$id]);
             $user = $stmt->fetch();
             if (!$user) send_response(['success' => false, 'message' => 'Usuario no encontrado'], 404);
@@ -1128,7 +1163,10 @@ if ($route === '/usuarios') {
                 CONCAT(nombreUsu, IF(apellidoUsu != '' AND apellidoUsu != '-', CONCAT(' ', apellidoUsu), '')) as name,
                 correoUsu as email,
                 estadoUsu as status,
-                telefonoUsu as phone
+                telefonoUsu as phone,
+                usuarioUsu as username,
+                fechaNacUsu as dob,
+                direccionUsu as address
              FROM usuario
              WHERE nombreUsu LIKE ? OR correoUsu LIKE ? OR apellidoUsu LIKE ?
              ORDER BY idUsu ASC
@@ -1154,6 +1192,11 @@ if ($route === '/usuarios') {
         $name    = trim($input['name'] ?? '');
         $email   = trim($input['email'] ?? '');
         $password= trim($input['password'] ?? '');
+        $phone   = trim($input['phone'] ?? '');
+        $username= trim($input['username'] ?? '');
+        $dob     = trim($input['dob'] ?? '');
+        $address = isset($input['address']) && is_array($input['address']) ? json_encode($input['address']) : null;
+        $status  = trim($input['status'] ?? 'Activo');
         $roleIds = array_map('intval', $input['roleIds'] ?? array_map(fn($r) => $r['id'] ?? 0, $input['roles'] ?? []));
 
         if (empty($name) || empty($email)) {
@@ -1165,8 +1208,19 @@ if ($route === '/usuarios') {
 
             if ($id > 0) {
                 // UPDATE existing user
-                $stmt = $pdo->prepare("UPDATE usuario SET nombreUsu = ?, apellidoUsu = '-', correoUsu = ? WHERE idUsu = ?");
-                $stmt->execute([$name, $email, $id]);
+                $updateQuery = "UPDATE usuario SET nombreUsu = ?, apellidoUsu = '-', correoUsu = ?, telefonoUsu = ?, usuarioUsu = ?, fechaNacUsu = ?, direccionUsu = ?, estadoUsu = ?";
+                $params = [$name, $email, $phone, $username, $dob ?: null, $address, $status];
+
+                if (!empty($password)) {
+                    $updateQuery .= ", contrasenaUsu = ?";
+                    $params[] = password_hash($password, PASSWORD_DEFAULT);
+                }
+
+                $updateQuery .= " WHERE idUsu = ?";
+                $params[] = $id;
+
+                $stmt = $pdo->prepare($updateQuery);
+                $stmt->execute($params);
             } else {
                 // CREATE new user
                 if (empty($password)) $password = 'Sbaveca2025!';

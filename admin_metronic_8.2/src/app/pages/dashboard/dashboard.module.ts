@@ -4,6 +4,7 @@ import { RouterModule } from '@angular/router';
 import { DashboardComponent } from './dashboard.component';
 import { ModalsModule, WidgetsModule } from '../../_metronic/partials';
 import { SharedModule } from 'src/app/_metronic/shared/shared.module';
+import { NgApexchartsModule } from 'ng-apexcharts';
 
 @NgModule({
   declarations: [DashboardComponent],
@@ -18,6 +19,7 @@ import { SharedModule } from 'src/app/_metronic/shared/shared.module';
     ]),
     WidgetsModule,
     ModalsModule,
+    NgApexchartsModule,
   ],
 })
 export class DashboardModule {}

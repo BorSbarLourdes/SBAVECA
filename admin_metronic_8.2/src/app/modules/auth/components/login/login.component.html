@@ -33,8 +33,8 @@
   <ng-container *ngIf="hasError">
     <div class="mb-lg-15 alert alert-danger">
       <div class="alert-text font-weight-bold" *ngIf="errorType === 'no_permission'">
-        <span class="d-block fw-bold mb-1">Acceso no autorizado</span>
-        Tu cuenta no tiene permisos para acceder al panel de administración. Si creés que es un error, contactá al administrador del sistema.
+        <span class="d-block fw-bold mb-1">Acceso denegado</span>
+        Tienes acceso denegado al sistema. Tu cuenta se encuentra inactiva o no cuenta con los permisos necesarios.
       </div>
       <div class="alert-text font-weight-bold" *ngIf="errorType !== 'no_permission'">
         El usuario y/o la contraseña son incorrectos o no cumplen las políticas de seguridad.

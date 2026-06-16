@@ -27,6 +27,11 @@ export interface IUserModel {
     password?: string;
     roles?: IRoleModel[];
     role?: string;
+    username?: string;
+    phone?: string;
+    dob?: string;
+    address?: any;
+    status?: string;
 }
 
 @Injectable({
@@ -49,7 +54,12 @@ export class UserService {
             role: roles.map((r: any) => r.name).join(', '),
             avatar: user.id === 1 ? './assets/media/avatars/300-1.jpg' : user.id === 2 ? './assets/media/avatars/300-6.jpg' : './assets/media/avatars/300-20.jpg',
             created_at: user.created_at || new Date().toISOString(),
-            last_login_at: user.last_login_at
+            last_login_at: user.last_login_at,
+            username: user.username,
+            phone: user.phone,
+            dob: user.dob,
+            address: user.address ? (typeof user.address === 'string' ? JSON.parse(user.address) : user.address) : {},
+            status: user.status
         };
     }
 
@@ -93,7 +103,12 @@ export class UserService {
             name: user.name,
             email: user.email,
             password: user.password || 'Sbaveca2025!',
-            roleIds: roleIds
+            roleIds: roleIds,
+            username: user.username,
+            phone: user.phone,
+            dob: user.dob,
+            address: user.address,
+            status: user.status
         };
         return this.http.post<any>(`${environment.apiUrl}/usuarios`, payload).pipe(
             tap((res) => {
@@ -110,7 +125,12 @@ export class UserService {
                     roles: user.roles || [],
                     role: (user.roles || []).map(r => r.name).join(', '),
                     avatar: './assets/media/avatars/300-20.jpg',
-                    created_at: new Date().toISOString()
+                    created_at: new Date().toISOString(),
+                    username: user.username,
+                    phone: user.phone,
+                    dob: user.dob,
+                    address: user.address,
+                    status: user.status
                 };
             })
         );
@@ -122,7 +142,13 @@ export class UserService {
             id: +id,
             name: user.name,
             email: user.email,
-            roleIds: roleIds
+            password: user.password,
+            roleIds: roleIds,
+            username: user.username,
+            phone: user.phone,
+            dob: user.dob,
+            address: user.address,
+            status: user.status
         };
         return this.http.post<any>(`${environment.apiUrl}/usuarios`, payload).pipe(
             tap((res) => {
@@ -139,7 +165,12 @@ export class UserService {
                     roles: user.roles || [],
                     role: (user.roles || []).map(r => r.name).join(', '),
                     avatar: './assets/media/avatars/300-20.jpg',
-                    created_at: user.created_at
+                    created_at: user.created_at,
+                    username: user.username,
+                    phone: user.phone,
+                    dob: user.dob,
+                    address: user.address,
+                    status: user.status
                 };
             })
         );

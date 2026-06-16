@@ -72,7 +72,7 @@ export class PageInfoService {
 
     const allActiveMenuLinks = Array.from<HTMLLinkElement>(
       menu.querySelectorAll('a.menu-link')
-    ).filter((link) => link.classList.contains('active'));
+    ).filter((link) => link.classList.contains('active') && !link.closest('[data-kt-element="theme-mode-menu"]'));
 
     if (!allActiveMenuLinks || allActiveMenuLinks.length === 0) {
       return;

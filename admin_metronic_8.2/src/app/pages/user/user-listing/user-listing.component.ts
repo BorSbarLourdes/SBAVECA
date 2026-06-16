@@ -100,6 +100,12 @@ export class UserListingComponent implements OnInit, AfterViewInit, OnDestroy {
           }
         },
         {
+          title: 'Estado', data: 'status', render: function (data) {
+            const statusClass = data === 'Activo' ? 'success' : 'danger';
+            return `<div class="badge badge-light-${statusClass} fw-bold">${data || 'Activo'}</div>`;
+          }
+        },
+        {
           title: 'Fecha de Registro', data: 'created_at', render: function (data) {
             return moment(data).format('DD MMM YYYY, hh:mm a');;
           }
@@ -126,11 +132,17 @@ export class UserListingComponent implements OnInit, AfterViewInit, OnDestroy {
       if (!this.userModel.roles) {
         this.userModel.roles = [];
       }
+      if (!this.userModel.address) {
+        this.userModel.address = {};
+      }
+      if (!this.userModel.status) {
+        this.userModel.status = 'Activo';
+      }
     });
   }
 
   create() {
-    this.userModel = { id: 0, name: '', email: '', roles: [] };
+    this.userModel = { id: 0, name: '', email: '', roles: [], status: 'Activo', address: {} };
   }
 
   isRoleSelected(roleId: number): boolean {
