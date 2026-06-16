@@ -22,6 +22,13 @@ export class RecetarioCostesComponent implements OnInit {
   ngOnInit(): void {
     this.stateService.recipes$.subscribe(data => {
       this.recipes = data;
+      if (this.selectedRecipe) {
+        const updated = this.recipes.find(r => r.id === this.selectedRecipe!.id);
+        if (updated) {
+          this.selectedRecipe = updated;
+          this.calculateCosts();
+        }
+      }
     });
     this.stateService.stock$.subscribe(data => {
       this.stockItems = data;
@@ -43,12 +50,26 @@ export class RecetarioCostesComponent implements OnInit {
     this.selectedRecipe.ingredients.forEach(ing => {
       const stock = this.stockItems.find(s => s.id === Number(ing.stockId));
       if (stock) {
-        const sub = ing.quantity * stock.costPrice;
+        const getBaseQty = (q: number, u: string, w?: number) => {
+          if (!u) return q;
+          const lower = u.toLowerCase();
+          if (lower.includes('kg') || lower.includes('ltr') || lower.includes('litro')) return q * 1000;
+          if (lower.includes('gr') || lower.includes('ml')) return q;
+          if (w && w > 0) return q * w;
+          return q;
+        };
+
+        const ingUnit = ing.unit || stock.unit;
+        const ingBase = getBaseQty(ing.quantity, ingUnit, ing.unitWeight);
+        const stockBase = getBaseQty(1, stock.unit, stock.unitWeight);
+        
+        const sub = ingBase * (stock.costPrice / stockBase);
+        
         total += sub;
         this.ingredientDetails.push({
           name: stock.name,
           quantity: ing.quantity,
-          unit: stock.unit,
+          unit: ingUnit,
           unitCost: stock.costPrice,
           subtotal: sub
         });

@@ -50,7 +50,11 @@ export class ProfileDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
-  saveSettings() {
+  saveSettings(event?: Event) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
     this.isLoading$.next(true);
 
     const currentUser = this.auth.currentUserValue;

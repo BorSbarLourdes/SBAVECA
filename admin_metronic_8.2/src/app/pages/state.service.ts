@@ -33,6 +33,7 @@ export interface StockItem {
   quantity: number;
   minThreshold: number;
   unit: string;
+  unitWeight?: number;
   costPrice: number;
   supplierId: number;
   image?: string;
@@ -41,6 +42,8 @@ export interface StockItem {
 export interface RecipeIngredient {
   stockId: number;
   quantity: number;
+  unit?: string;
+  unitWeight?: number;
 }
 
 export interface Recipe {

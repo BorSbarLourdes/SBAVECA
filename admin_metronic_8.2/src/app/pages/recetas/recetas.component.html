@@ -40,7 +40,7 @@
             <td>
               <div class="d-flex flex-column gap-1">
                 <span *ngFor="let ing of r.ingredients" class="fs-7 text-gray-700">
-                  • {{ getIngredientName(ing.stockId) }} ({{ ing.quantity }} {{ getIngredientUnit(ing.stockId) }})
+                  • {{ getIngredientName(ing.stockId) }} ({{ ing.quantity }} {{ ing.unit || getIngredientUnit(ing.stockId) }})
                 </span>
               </div>
             </td>
@@ -103,17 +103,34 @@
                 <h5 class="text-gray-800 fw-bold mb-4">Ingredientes de la Receta</h5>
                 
                 <div class="row g-3 align-items-end mb-4">
-                  <div class="col-12 col-sm-6">
+                  <div class="col-12 col-sm-4">
                     <label class="form-label">Seleccionar Ingrediente del Stock</label>
-                    <select class="form-select" [(ngModel)]="tempStockId">
+                    <select class="form-select" [(ngModel)]="tempStockId" (change)="onStockChange()">
                       <option *ngFor="let s of stockItems" [value]="s.id">{{ s.name }} ({{ s.unit }})</option>
                     </select>
                   </div>
-                  <div class="col-12 col-sm-4">
+                  <div class="col-12 col-sm-2">
                     <label class="form-label">Cantidad Requerida</label>
                     <input type="number" step="0.01" class="form-control" [(ngModel)]="tempQuantity">
                   </div>
                   <div class="col-12 col-sm-2">
+                    <label class="form-label">Unidad</label>
+                    <select class="form-select" [(ngModel)]="tempUnit">
+                      <option value="kg">kg</option>
+                      <option value="gr">gr</option>
+                      <option value="Ltr">Ltr</option>
+                      <option value="ml">ml</option>
+                      <option value="Unidad">Unidad</option>
+                      <option value="Caja">Caja</option>
+                      <option value="Paquete">Paquete</option>
+                      <option value="Lata">Lata</option>
+                    </select>
+                  </div>
+                  <div class="col-12 col-sm-2" *ngIf="tempUnit !== 'Unidad'">
+                    <label class="form-label text-truncate" title="Peso / Volumen">Peso/Vol <span class="text-muted fw-normal fs-8">(Opc.)</span></label>
+                    <input type="number" step="0.01" class="form-control" [(ngModel)]="tempUnitWeight" placeholder="Ej: 500">
+                  </div>
+                  <div class="col-12 col-sm-2" [ngClass]="{'offset-sm-2': tempUnit === 'Unidad'}">
                     <button class="btn btn-secondary w-100" (click)="addTempIngredient()">Agregar</button>
                   </div>
                 </div>
@@ -131,8 +148,21 @@
                     <tbody>
                       <tr *ngFor="let ing of formIngredients; let i = index">
                         <td>{{ getIngredientName(ing.stockId) }}</td>
-                        <td class="text-end text-gray-900 fw-bold">
-                          {{ ing.quantity }} {{ getIngredientUnit(ing.stockId) }}
+                        <td>
+                          <div class="d-flex justify-content-end align-items-center gap-2">
+                            <input type="number" step="0.01" class="form-control form-control-sm w-80px text-end" [(ngModel)]="ing.quantity" title="Cantidad">
+                            <select class="form-select form-select-sm w-90px" [(ngModel)]="ing.unit" title="Unidad">
+                              <option value="kg">kg</option>
+                              <option value="gr">gr</option>
+                              <option value="Ltr">Ltr</option>
+                              <option value="ml">ml</option>
+                              <option value="Unidad">Unidad</option>
+                              <option value="Caja">Caja</option>
+                              <option value="Paquete">Paquete</option>
+                              <option value="Lata">Lata</option>
+                            </select>
+                            <input *ngIf="ing.unit !== 'Unidad'" type="number" step="0.01" class="form-control form-control-sm w-80px text-end" [(ngModel)]="ing.unitWeight" placeholder="Peso/Vol">
+                          </div>
                         </td>
                         <td class="text-end">
                           <button class="btn btn-icon btn-bg-light btn-active-color-danger btn-sm" (click)="removeIngredient(i)">

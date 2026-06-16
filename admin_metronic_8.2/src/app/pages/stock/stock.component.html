@@ -195,7 +195,23 @@
           </div>
           <div class="col-12 col-sm-6 col-lg-3">
             <label class="form-label">Unidad de Medida</label>
-            <input type="text" class="form-control" [(ngModel)]="itemUnit" placeholder="kg, unidades, etc.">
+            <select class="form-select" [(ngModel)]="itemUnit">
+              <option value="kg">Kilogramos (kg)</option>
+              <option value="gr">Gramos (gr)</option>
+              <option value="Ltr">Litros (Ltr)</option>
+              <option value="ml">Mililitros (ml)</option>
+              <option value="Unidad">Unidad / Pieza</option>
+              <option value="Caja">Caja</option>
+              <option value="Paquete">Paquete</option>
+              <option value="Lata">Lata</option>
+            </select>
+          </div>
+          <div class="col-12 col-sm-6 col-lg-3" *ngIf="itemUnit !== 'Unidad'">
+            <label class="form-label text-truncate" title="Peso o Volumen">Peso / Volumen <span class="text-muted fw-normal fs-8">(Opcional)</span></label>
+            <div class="input-group">
+              <input type="number" step="0.01" class="form-control" [(ngModel)]="itemUnitWeight" placeholder="Ej: 500">
+              <span class="input-group-text px-2">gr/ml</span>
+            </div>
           </div>
           <div class="col-12 col-sm-6 col-lg-3">
             <label class="form-label">Umbral de Alerta Mínimo</label>

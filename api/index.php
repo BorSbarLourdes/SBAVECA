@@ -497,7 +497,7 @@ function save_base64_image($base64_string) {
 if ($route === '/insumos') {
     if ($method === 'GET') {
         $stmt = $pdo->query("SELECT i.idIns as id, i.nombreIns as name, i.categoriaIns as category, 
-                                    i.unidadMedidaIns as unit, i.precioCompraIns as costPrice, 
+                                    i.unidadMedidaIns as unit, i.pesoPorUnidadIns as unitWeight, i.precioCompraIns as costPrice, 
                                     i.stockMinimoIns as minThreshold, i.imagenBlobIns as image, 
                                     i.proveedorIdPro as supplierId, inv.stockActualInv as quantity 
                              FROM insumo i 
@@ -510,6 +510,7 @@ if ($route === '/insumos') {
             $item['quantity'] = $item['quantity'] !== null ? (int)$item['quantity'] : 0;
             $item['minThreshold'] = (int)$item['minThreshold'];
             $item['costPrice'] = (float)$item['costPrice'];
+            $item['unitWeight'] = $item['unitWeight'] !== null ? (float)$item['unitWeight'] : null;
             $item['supplierId'] = (int)$item['supplierId'];
             
             $cat = $item['category'];
@@ -531,6 +532,7 @@ if ($route === '/insumos') {
         $name = $input['name'] ?? '';
         $category = $input['category'] ?? 'ingrediente';
         $unit = $input['unit'] ?? '';
+        $unitWeight = isset($input['unitWeight']) && $input['unitWeight'] !== '' ? (float)$input['unitWeight'] : null;
         $quantity = isset($input['quantity']) ? (int)$input['quantity'] : 0;
         $minThreshold = isset($input['minThreshold']) ? (int)$input['minThreshold'] : 0;
         $costPrice = isset($input['costPrice']) ? (float)$input['costPrice'] : 0.0;
@@ -556,8 +558,8 @@ if ($route === '/insumos') {
             $pdo->beginTransaction();
             
             if ($id > 0) {
-                $stmt = $pdo->prepare("UPDATE insumo SET nombreIns = ?, categoriaIns = ?, unidadMedidaIns = ?, precioCompraIns = ?, stockMinimoIns = ?, imagenBlobIns = ?, proveedorIdPro = ? WHERE idIns = ?");
-                $stmt->execute([$name, $mysqlCategory, $unit, $costPrice, $minThreshold, $imagePath, $dbSupplierId, $id]);
+                $stmt = $pdo->prepare("UPDATE insumo SET nombreIns = ?, categoriaIns = ?, unidadMedidaIns = ?, pesoPorUnidadIns = ?, precioCompraIns = ?, stockMinimoIns = ?, imagenBlobIns = ?, proveedorIdPro = ? WHERE idIns = ?");
+                $stmt->execute([$name, $mysqlCategory, $unit, $unitWeight, $costPrice, $minThreshold, $imagePath, $dbSupplierId, $id]);
                 
                 $stmtCheck = $pdo->prepare("SELECT idInv FROM inventario WHERE insumoIdInv = ?");
                 $stmtCheck->execute([$id]);
@@ -569,8 +571,8 @@ if ($route === '/insumos') {
                     $stmtInv->execute([$id, $quantity, $minThreshold, $unit]);
                 }
             } else {
-                $stmt = $pdo->prepare("INSERT INTO insumo (nombreIns, categoriaIns, unidadMedidaIns, precioCompraIns, stockMinimoIns, imagenBlobIns, proveedorIdPro, estadoIns) VALUES (?, ?, ?, ?, ?, ?, ?, 'Activo')");
-                $stmt->execute([$name, $mysqlCategory, $unit, $costPrice, $minThreshold, $imagePath, $dbSupplierId]);
+                $stmt = $pdo->prepare("INSERT INTO insumo (nombreIns, categoriaIns, unidadMedidaIns, pesoPorUnidadIns, precioCompraIns, stockMinimoIns, imagenBlobIns, proveedorIdPro, estadoIns) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Activo')");
+                $stmt->execute([$name, $mysqlCategory, $unit, $unitWeight, $costPrice, $minThreshold, $imagePath, $dbSupplierId]);
                 $id = $pdo->lastInsertId();
                 
                 $stmtInv = $pdo->prepare("INSERT INTO inventario (insumoIdInv, stockActualInv, stockMinimoInv, unidadMedidaInv) VALUES (?, ?, ?, ?)");
@@ -710,7 +712,7 @@ if ($route === '/recetas') {
             $r['id'] = (int)$r['id'];
             $r['marginPercent'] = (float)$r['marginPercent'];
             
-            $stmtIng = $pdo->prepare("SELECT insumoIdRecIng as stockId, cantidadNecesaria as quantity 
+            $stmtIng = $pdo->prepare("SELECT insumoIdRecIng as stockId, cantidadNecesaria as quantity, unidadMedidaRecIng as unit, pesoPorUnidadRecIng as unitWeight 
                                       FROM receta_ingrediente 
                                       WHERE recetaIdRecIng = ?");
             $stmtIng->execute([$r['id']]);
@@ -719,6 +721,8 @@ if ($route === '/recetas') {
             foreach ($ingredients as &$ing) {
                 $ing['stockId'] = (int)$ing['stockId'];
                 $ing['quantity'] = (float)$ing['quantity'];
+                $ing['unit'] = $ing['unit'] ?? '';
+                $ing['unitWeight'] = $ing['unitWeight'] !== null ? (float)$ing['unitWeight'] : null;
             }
             $r['ingredients'] = $ingredients;
         }
@@ -759,16 +763,32 @@ if ($route === '/recetas') {
             foreach ($ingredients as $ing) {
                 $stockId = (int)$ing['stockId'];
                 $qty = (float)$ing['quantity'];
+                $frontendUnit = isset($ing['unit']) ? trim($ing['unit']) : '';
+                $unitWeight = isset($ing['unitWeight']) && $ing['unitWeight'] !== '' ? (float)$ing['unitWeight'] : null;
                 
-                $stmtIns = $pdo->prepare("SELECT unidadMedidaIns, precioCompraIns FROM insumo WHERE idIns = ?");
+                $stmtIns = $pdo->prepare("SELECT unidadMedidaIns, pesoPorUnidadIns, precioCompraIns FROM insumo WHERE idIns = ?");
                 $stmtIns->execute([$stockId]);
                 $insDetails = $stmtIns->fetch();
-                $unit = $insDetails ? $insDetails['unidadMedidaIns'] : 'unidades';
+                $stockUnit = $insDetails ? strtolower($insDetails['unidadMedidaIns']) : 'unidades';
+                $stockUnitWeight = $insDetails && isset($insDetails['pesoPorUnidadIns']) ? (float)$insDetails['pesoPorUnidadIns'] : null;
+                $unit = !empty($frontendUnit) ? $frontendUnit : $stockUnit;
                 $cost = $insDetails ? (float)$insDetails['precioCompraIns'] : 0.0;
-                $costProportional = $qty * $cost;
                 
-                $stmtAdd = $pdo->prepare("INSERT INTO receta_ingrediente (recetaIdRecIng, insumoIdRecIng, cantidadNecesaria, unidadMedidaRecIng, costoProporcional) VALUES (?, ?, ?, ?, ?)");
-                $stmtAdd->execute([$id, $stockId, $qty, $unit, $costProportional]);
+                $getBaseQty = function($q, $u, $w) {
+                    $l = strtolower($u);
+                    if (strpos($l, 'kg') !== false || strpos($l, 'ltr') !== false || strpos($l, 'litro') !== false) return $q * 1000;
+                    if (strpos($l, 'gr') !== false || strpos($l, 'ml') !== false) return $q;
+                    if ($w && $w > 0) return $q * $w;
+                    return $q;
+                };
+                
+                $ingBase = $getBaseQty($qty, $unit, $unitWeight);
+                $stockBase = $getBaseQty(1, $stockUnit, $stockUnitWeight);
+                
+                $costProportional = $stockBase > 0 ? $ingBase * ($cost / $stockBase) : 0;
+                
+                $stmtAdd = $pdo->prepare("INSERT INTO receta_ingrediente (recetaIdRecIng, insumoIdRecIng, cantidadNecesaria, unidadMedidaRecIng, pesoPorUnidadRecIng, costoProporcional) VALUES (?, ?, ?, ?, ?, ?)");
+                $stmtAdd->execute([$id, $stockId, $qty, $unit, $unitWeight, $costProportional]);
             }
             
             $pdo->commit();

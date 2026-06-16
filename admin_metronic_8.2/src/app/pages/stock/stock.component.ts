@@ -21,7 +21,8 @@ export class StockComponent implements OnInit, OnDestroy {
   itemName = '';
   itemCategory: 'ingrediente' | 'utensilio' | 'producto' = 'ingrediente';
   itemQuantity = 0;
-  itemUnit = '';
+  itemUnit = 'kg';
+  itemUnitWeight: number | null = null;
   itemMinThreshold = 0;
   itemCostPrice = 0;
   itemSupplierId = 0;
@@ -73,7 +74,8 @@ export class StockComponent implements OnInit, OnDestroy {
     this.itemName = '';
     this.itemCategory = 'ingrediente';
     this.itemQuantity = 0;
-    this.itemUnit = '';
+    this.itemUnit = 'kg';
+    this.itemUnitWeight = null;
     this.itemMinThreshold = 0;
     this.itemCostPrice = 0;
     this.itemSupplierId = 0;
@@ -86,7 +88,8 @@ export class StockComponent implements OnInit, OnDestroy {
     this.itemName = item.name;
     this.itemCategory = item.category;
     this.itemQuantity = item.quantity;
-    this.itemUnit = item.unit;
+    this.itemUnit = item.unit || 'kg';
+    this.itemUnitWeight = item.unitWeight ?? null;
     this.itemMinThreshold = item.minThreshold;
     this.itemCostPrice = item.costPrice;
     this.itemSupplierId = item.supplierId || 0;
@@ -128,6 +131,7 @@ export class StockComponent implements OnInit, OnDestroy {
       quantity: this.itemQuantity,
       minThreshold: this.itemMinThreshold,
       unit: this.itemUnit,
+      unitWeight: this.itemUnitWeight !== null ? this.itemUnitWeight : undefined,
       costPrice: this.itemCostPrice,
       supplierId: +this.itemSupplierId,
       image: this.itemImage

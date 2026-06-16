@@ -24,6 +24,8 @@ export class RecetasComponent implements OnInit {
   // Add new ingredient temp variables
   tempStockId = 0;
   tempQuantity = 0;
+  tempUnit = 'kg';
+  tempUnitWeight: number | null = null;
 
   constructor(private stateService: StateService, private authService: AuthService) {}
 
@@ -39,6 +41,8 @@ export class RecetasComponent implements OnInit {
       this.stockItems = data.filter(s => s.category === 'ingrediente');
       if (this.stockItems.length > 0) {
         this.tempStockId = this.stockItems[0].id;
+        this.tempUnit = this.stockItems[0].unit || 'kg';
+        this.tempUnitWeight = this.stockItems[0].unitWeight ?? null;
       }
     });
   }
@@ -53,18 +57,28 @@ export class RecetasComponent implements OnInit {
     return item ? item.unit : '';
   }
 
+  onStockChange() {
+    const item = this.stockItems.find(s => s.id === Number(this.tempStockId));
+    if (item) {
+      this.tempUnit = item.unit || 'kg';
+      this.tempUnitWeight = item.unitWeight ?? null;
+    }
+  }
+
   addTempIngredient() {
     if (this.tempQuantity <= 0) {
       alert('La cantidad debe ser mayor a 0.');
       return;
     }
-    const exists = this.formIngredients.find(i => Number(i.stockId) === Number(this.tempStockId));
+    const exists = this.formIngredients.find(i => Number(i.stockId) === Number(this.tempStockId) && i.unit === this.tempUnit);
     if (exists) {
       exists.quantity += this.tempQuantity;
     } else {
       this.formIngredients.push({
         stockId: Number(this.tempStockId),
-        quantity: this.tempQuantity
+        quantity: this.tempQuantity,
+        unit: this.tempUnit,
+        unitWeight: this.tempUnitWeight !== null ? this.tempUnitWeight : undefined
       });
     }
     this.tempQuantity = 0;
@@ -82,6 +96,11 @@ export class RecetasComponent implements OnInit {
     this.formIngredients = [];
     this.formImage = '';
     this.tempQuantity = 0;
+    if (this.stockItems.length > 0) {
+      this.tempStockId = this.stockItems[0].id;
+      this.tempUnit = this.stockItems[0].unit || 'kg';
+      this.tempUnitWeight = this.stockItems[0].unitWeight ?? null;
+    }
     this.isModalOpen = true;
   }
 
@@ -91,9 +110,17 @@ export class RecetasComponent implements OnInit {
     this.formInstructions = recipe.instructions;
     this.formMarginPercent = recipe.marginPercent;
     this.formImage = recipe.image || '';
-    // deep clone
-    this.formIngredients = recipe.ingredients.map(i => ({ ...i }));
+    // deep clone and initialize unit if missing
+    this.formIngredients = recipe.ingredients.map(i => ({ 
+      ...i, 
+      unit: i.unit || this.getIngredientUnit(i.stockId) || 'kg'
+    }));
     this.tempQuantity = 0;
+    if (this.stockItems.length > 0) {
+      this.tempStockId = this.stockItems[0].id;
+      this.tempUnit = this.stockItems[0].unit || 'kg';
+      this.tempUnitWeight = this.stockItems[0].unitWeight ?? null;
+    }
     this.isModalOpen = true;
   }
 

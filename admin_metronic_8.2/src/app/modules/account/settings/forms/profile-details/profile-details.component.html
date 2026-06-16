@@ -12,7 +12,7 @@
     </div>
   </div>
   <div id="kt_account_profile_details" class="collapse show">
-    <form novalidate="" class="form" (ngSubmit)="saveSettings()">
+    <form novalidate="" class="form" (submit)="saveSettings($event)">
       <div class="card-body border-top p-9">
         
         <!-- Avatar -->
@@ -121,9 +121,10 @@
       <!-- Footer Buttons -->
       <div class="card-footer d-flex justify-content-end py-6 px-9">
         <button
-          type="submit"
+          type="button"
           class="btn btn-primary"
-          [disabled]="isLoading || !firstname || !lastname || !username || !email"
+          [disabled]="isLoading || !firstname || !username || !email"
+          (click)="saveSettings($event)"
         >
           <ng-container *ngIf="!isLoading">Guardar Cambios</ng-container>
           <ng-container *ngIf="isLoading">
