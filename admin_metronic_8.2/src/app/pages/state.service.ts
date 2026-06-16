@@ -614,7 +614,19 @@ export class StateService {
     recipe.ingredients.forEach(ing => {
       const stock = this.stock$.value.find(s => s.id === ing.stockId);
       if (stock) {
-        cost += ing.quantity * stock.costPrice;
+        const getBaseQty = (q: number, u: string, w: number | null) => {
+          const l = (u || '').toLowerCase();
+          if (l.includes('kg') || l.includes('ltr') || l.includes('litro')) return q * 1000;
+          if (l.includes('gr') || l.includes('ml')) return q;
+          if (w && w > 0) return q * w;
+          return q;
+        };
+        const ingBase = getBaseQty(ing.quantity, ing.unit || '', ing.unitWeight || null);
+        const stockBase = getBaseQty(1, stock.unit || '', stock.unitWeight || null);
+        
+        if (stockBase > 0) {
+          cost += ingBase * (stock.costPrice / stockBase);
+        }
       }
     });
     return cost;
@@ -629,7 +641,25 @@ export class StateService {
     recipe.ingredients.forEach(ing => {
       const idx = list.findIndex(s => s.id === ing.stockId);
       if (idx !== -1) {
-        list[idx].quantity = Math.max(0, list[idx].quantity - (ing.quantity * scaleQty));
+        const stockItem = list[idx];
+        const getBaseQty = (q: number, u: string, w: number | null) => {
+          const l = (u || '').toLowerCase();
+          if (l.includes('kg') || l.includes('ltr') || l.includes('litro')) return q * 1000;
+          if (l.includes('gr') || l.includes('ml')) return q;
+          if (w && w > 0) return q * w;
+          return q;
+        };
+        const ingBase = getBaseQty(ing.quantity, ing.unit || '', ing.unitWeight || null);
+        const stockBase = getBaseQty(1, stockItem.unit || '', stockItem.unitWeight || null);
+        
+        // Convert the required base quantity back to the stock's unit dimension
+        // Or simply deduct the fraction of the stock item required.
+        // E.g., stock is 1 Kg (base 1000). required is 500g (base 500). 
+        // We deduct 500 / 1000 = 0.5 Kg from stock.
+        if (stockBase > 0) {
+          const deductionFraction = ingBase / stockBase;
+          list[idx].quantity = Math.max(0, list[idx].quantity - (deductionFraction * scaleQty));
+        }
       }
     });
     this.stock$.next(list);

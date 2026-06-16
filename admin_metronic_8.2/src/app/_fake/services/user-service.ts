@@ -22,6 +22,8 @@ export interface IUserModel {
     last_login_at?: null | string;
     last_login_ip?: null | string;
     name?: string;
+    firstname?: string;
+    lastname?: string;
     profile_photo_path?: null | string;
     updated_at?: string;
     password?: string;
@@ -103,6 +105,8 @@ export class UserService {
         const roleIds = user.roles ? user.roles.map(r => r.id) : [];
         const payload = {
             name: user.name,
+            firstname: user.firstname,
+            lastname: user.lastname,
             email: user.email,
             password: user.password || 'Sbaveca2025!',
             roleIds: roleIds,
@@ -143,6 +147,8 @@ export class UserService {
         const payload = {
             id: +id,
             name: user.name,
+            firstname: user.firstname,
+            lastname: user.lastname,
             email: user.email,
             password: user.password,
             roleIds: roleIds,

@@ -57,6 +57,12 @@ export class ProfileDetailsComponent implements OnInit, OnDestroy {
     }
     this.isLoading$.next(true);
 
+    if (!this.firstname || !this.username || !this.email) {
+      this.toastr.warning('Por favor completa todos los campos obligatorios (Nombre, Usuario y Correo).', 'Campos Incompletos');
+      this.isLoading$.next(false);
+      return;
+    }
+
     const currentUser = this.auth.currentUserValue;
     if (!currentUser) {
       this.isLoading$.next(false);
@@ -65,6 +71,8 @@ export class ProfileDetailsComponent implements OnInit, OnDestroy {
 
     const updatedUserPayload: any = {
       name: `${this.firstname} ${this.lastname}`.trim(),
+      firstname: this.firstname,
+      lastname: this.lastname,
       email: this.email,
       username: this.username,
       phone: this.phone,

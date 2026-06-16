@@ -1230,6 +1230,13 @@ if ($route === '/usuarios') {
         $input   = json_decode(file_get_contents('php://input'), true);
         $id      = isset($input['id']) ? (int)$input['id'] : 0;
         $name    = trim($input['name'] ?? '');
+        $firstname = trim($input['firstname'] ?? '');
+        $lastname  = trim($input['lastname'] ?? '');
+        if (empty($firstname) && empty($lastname) && !empty($name)) {
+            $parts = explode(' ', $name, 2);
+            $firstname = $parts[0] ?? '';
+            $lastname = $parts[1] ?? '-';
+        }
         $email   = trim($input['email'] ?? '');
         $password= trim($input['password'] ?? '');
         $phone   = trim($input['phone'] ?? '');
@@ -1248,8 +1255,8 @@ if ($route === '/usuarios') {
 
             if ($id > 0) {
                 // UPDATE existing user
-                $updateQuery = "UPDATE usuario SET nombreUsu = ?, apellidoUsu = '-', correoUsu = ?, telefonoUsu = ?, usuarioUsu = ?, fechaNacUsu = ?, direccionUsu = ?, estadoUsu = ?";
-                $params = [$name, $email, $phone, $username, $dob ?: null, $address, $status];
+                $updateQuery = "UPDATE usuario SET nombreUsu = ?, apellidoUsu = ?, correoUsu = ?, telefonoUsu = ?, usuarioUsu = ?, fechaNacUsu = ?, direccionUsu = ?, estadoUsu = ?";
+                $params = [$firstname, $lastname, $email, $phone, $username, $dob ?: null, $address, $status];
 
                 if (!empty($password)) {
                     $updateQuery .= ", contrasenaUsu = ?";
@@ -1285,8 +1292,8 @@ if ($route === '/usuarios') {
                 }
                 $cuil = $isAdminOrEmployee ? ('20' . str_pad(mt_rand(10000000, 99999999), 8, '0', STR_PAD_LEFT) . '9') : null;
 
-                $stmt = $pdo->prepare("INSERT INTO usuario (nombreUsu, apellidoUsu, correoUsu, usuarioUsu, contrasenaUsu, CUILUsu, telefonoUsu, estadoUsu, rolUsu) VALUES (?, '-', ?, ?, ?, ?, '', 'Activo', 'Cliente')");
-                $stmt->execute([$name, $email, $username, $hashedPw, $cuil]);
+                $stmt = $pdo->prepare("INSERT INTO usuario (nombreUsu, apellidoUsu, correoUsu, usuarioUsu, contrasenaUsu, CUILUsu, telefonoUsu, estadoUsu, rolUsu) VALUES (?, ?, ?, ?, ?, ?, '', 'Activo', 'Cliente')");
+                $stmt->execute([$firstname, $lastname, $email, $username, $hashedPw, $cuil]);
                 $id = (int)$pdo->lastInsertId();
             }
 

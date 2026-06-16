@@ -203,7 +203,7 @@ export class AuthService implements OnDestroy {
 
   logout() {
     this.stopInactivityTimer();
-    localStorage.removeItem(this.authLocalStorageToken);
+    sessionStorage.removeItem(this.authLocalStorageToken);
     this.currentUserSubject.next(undefined);
     this.router.navigate(['/auth/login'], {
       queryParams: {},
@@ -318,9 +318,9 @@ export class AuthService implements OnDestroy {
 
   // private methods
   private setAuthFromLocalStorage(auth: AuthModel): boolean {
-    // store auth authToken/refreshToken/epiresIn in local storage to keep user logged in between page refreshes
+    // store auth authToken/refreshToken/epiresIn in session storage to logout on browser close
     if (auth && auth.authToken) {
-      localStorage.setItem(this.authLocalStorageToken, JSON.stringify(auth));
+      sessionStorage.setItem(this.authLocalStorageToken, JSON.stringify(auth));
       return true;
     }
     return false;
@@ -328,7 +328,7 @@ export class AuthService implements OnDestroy {
 
   private getAuthFromLocalStorage(): AuthModel | undefined {
     try {
-      const lsValue = localStorage.getItem(this.authLocalStorageToken);
+      const lsValue = sessionStorage.getItem(this.authLocalStorageToken);
       if (!lsValue) {
         return undefined;
       }
