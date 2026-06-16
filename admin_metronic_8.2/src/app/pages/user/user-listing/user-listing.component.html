@@ -8,6 +8,16 @@
         <input type="text" data-action="filter" class="form-control form-control-solid w-250px ps-12" placeholder="Buscar Usuarios">
       </div>
       <!--end::Search-->
+      <!--begin::Filter Role-->
+      <div class="d-flex align-items-center position-relative my-1 ms-5">
+        <select class="form-select form-select-solid w-150px" (change)="filterRole($event)">
+          <option value="">Todos los Roles</option>
+          <option value="Administrador">Administrador</option>
+          <option value="Empleado">Empleado</option>
+          <option value="Cliente">Cliente</option>
+        </select>
+      </div>
+      <!--end::Filter Role-->
     </div>
     <!--begin::Card title-->
 

@@ -37,16 +37,23 @@ export class UserListingComponent implements OnInit, AfterViewInit, OnDestroy {
   swalOptions: SweetAlertOptions = {};
 
   roles$: Observable<DataTablesResponse>;
+  currentRoleFilter: string = '';
 
   constructor(private apiService: UserService, private roleService: RoleService, private cdr: ChangeDetectorRef) { }
 
   ngAfterViewInit(): void {
   }
 
+  filterRole(event: any) {
+    this.currentRoleFilter = event.target.value;
+    this.reloadEvent.emit(true);
+  }
+
   ngOnInit(): void {
     this.datatableConfig = {
       serverSide: true,
       ajax: (dataTablesParameters: any, callback) => {
+        dataTablesParameters.roleFilter = this.currentRoleFilter;
         this.apiService.getUsers(dataTablesParameters).subscribe(resp => {
           callback(resp);
         });

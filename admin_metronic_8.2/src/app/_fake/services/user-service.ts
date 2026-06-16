@@ -68,13 +68,15 @@ export class UserService {
         const length = dataTablesParameters?.length || 10;
         const draw = dataTablesParameters?.draw || 1;
         const search = dataTablesParameters?.search?.value || '';
+        const roleFilter = dataTablesParameters?.roleFilter || '';
 
         return this.http.get<any>(`${environment.apiUrl}/usuarios`, {
             params: {
                 start: start.toString(),
                 length: length.toString(),
                 draw: draw.toString(),
-                search: search
+                search: search,
+                roleFilter: roleFilter
             }
         }).pipe(
             map((res: any) => {

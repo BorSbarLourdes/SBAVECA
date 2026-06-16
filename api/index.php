@@ -1151,11 +1151,19 @@ if ($route === '/usuarios') {
         $start   = (int)($_GET['start'] ?? 0);
         $length  = (int)($_GET['length'] ?? 10);
         $draw    = (int)($_GET['draw'] ?? 1);
+        $roleFilter = $_GET['roleFilter'] ?? '';
 
         $total = (int)$pdo->query("SELECT COUNT(*) FROM usuario")->fetchColumn();
 
-        $stmtF = $pdo->prepare("SELECT COUNT(*) FROM usuario WHERE nombreUsu LIKE ? OR correoUsu LIKE ? OR apellidoUsu LIKE ?");
-        $stmtF->execute([$search, $search, $search]);
+        $roleCondition = '';
+        $roleParams = [];
+        if (!empty($roleFilter)) {
+            $roleCondition = " AND idUsu IN (SELECT ur.idUsu FROM usuario_rol ur JOIN roles r ON r.idRol = ur.idRol WHERE r.nombreRol = ?) ";
+            $roleParams[] = $roleFilter;
+        }
+
+        $stmtF = $pdo->prepare("SELECT COUNT(*) FROM usuario WHERE (nombreUsu LIKE ? OR correoUsu LIKE ? OR apellidoUsu LIKE ?)" . $roleCondition);
+        $stmtF->execute(array_merge([$search, $search, $search], $roleParams));
         $filtered = (int)$stmtF->fetchColumn();
 
         $stmt = $pdo->prepare(
@@ -1168,11 +1176,11 @@ if ($route === '/usuarios') {
                 fechaNacUsu as dob,
                 direccionUsu as address
              FROM usuario
-             WHERE nombreUsu LIKE ? OR correoUsu LIKE ? OR apellidoUsu LIKE ?
+             WHERE (nombreUsu LIKE ? OR correoUsu LIKE ? OR apellidoUsu LIKE ?)" . $roleCondition . "
              ORDER BY idUsu ASC
              LIMIT ?, ?"
         );
-        $stmt->execute([$search, $search, $search, $start, $length]);
+        $stmt->execute(array_merge([$search, $search, $search], $roleParams, [$start, $length]));
         $users = $stmt->fetchAll();
 
         foreach ($users as &$user) {
